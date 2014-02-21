@@ -1,6 +1,7 @@
 /**
  * rc.js - Row/Column Conversions
  * v0.01 - First release
+ * v0.02 - Better filter support
  */
  
  
@@ -13,9 +14,6 @@
 	 */
 	function Proxy(obj, index, clearUndef) {
 		var att;
-		
-		// Clean truthy/falsy values & undefined
-		clearUndef = !!clearUndef;
 				
 		for ( att in obj ) {
 			if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][index] !== undefined ) ) {
@@ -112,20 +110,27 @@
 		},
 		object: {
 			filter: function(obj, field, filter) {
-				var result = {}, fld, indexes, att;
+				return self.object.filterMerge(obj, self.object.filterIndexes(obj, field, filter));
+			},
+			filterIndexes: function(obj, field, filter) {
+				var indexes = false;
 				
 				if ( obj.hasOwnProperty(field) ) {
-					fld = obj[field];
+					indexes = self.array.getIndexes(obj[field], filter);
+				}
+				return indexes;
+			},
+			filterMerge: function(obj, indexes) {
+				var result = {},
+					att;
 				
-					indexes = self.array.getIndexes(fld, filter);
-					
+				if ( indexes ) {
 					for (att in obj) {
 						if ( obj.hasOwnProperty(att) ) {
 							result[att] = self.array.getByIndexes(obj[att], indexes);
 						}
 					}
 				}
-				
 				return result;
 			},
 			rotate: function(obj, result, clearUndef) {
@@ -135,9 +140,6 @@
 				if ( typeof obj !== 'object' ) {
 					throw new TypeError("RC: Argument is not an object");
 				}
-				
-				// Clean truthy/falsy values & undefined
-				clearUndef = !!clearUndef;
 				
 				if ( result === undefined ) {
 					result = [];
@@ -156,7 +158,7 @@
 					if ( result[i] === undefined ) {
 						result[i] = {};
 					} else if ( typeof result[i] !== 'object' ) {
-						throw new TypeError("RC: Result contains incrrect type at index " + i);
+						throw new TypeError("RC: Result contains incorrect type at index " + i);
 					}
 
 					for (att in obj) {
@@ -174,12 +176,22 @@
 			proxy: function(obj, index, clearUndef) {
 				return new Proxy(obj, index, clearUndef);
 			}
-		}
+		},
+		rotate: function(obj) {
+			// Generic, which directs to the appropriate array/object rotate
+			if (typeof obj !== 'object') throw new TypeError("RC: rotate requires an object or an array");
+			if ( Object.prototype.toString.call(obj) !== '[object Array]' ) {
+				return self.array.rotate.apply(this, arguments);
+			} else {
+				return self.object.rotate.apply(this, arguments);
+			}
+		},
+		version: 'v0.02';
 	};
 	
-	// Can we build a chainable mode?
 	root.rc = self;
 
+	// Can we build a chaining mode?
 	root.RC = function(obj, clearUndef) {
 		var att;
 		
@@ -199,5 +211,5 @@
 	root.RC.prototype.rotate = function(mergeObj, clearUndef) {
 		return self.object.rotate(this, mergeObj, clearUndef);
 	};
-
+	
 }(this));
