@@ -30,7 +30,7 @@ RC Solutions
 The simple column-based filter supports strict comparison intended for primitive types or a filter function. For all filter actions, the original object is not modified, but complex data types are referenced. Filters are broken into three functions:
 *  `rc.object.filter(obj, field, filter)` - Basic filter action returns a result set based on a field name and a filter.
 *  `rc.object.filterIndexes(obj, field, filter)` - Takes the same arguments as `rc.object.filter` but returns the indexes of the filter action. This is useful for more complex set manipulation.
-*  `rc.object.filterMerge(obj, indexes)` - Allows a filter action with on external source of indexes.
+*  `rc.object.filterMerge(obj, indexes)` - Allows a filter action with an external source of indexes.
 
 ###Proxy
 Extracting a row for viewing and interaction is convenient, but changes to primitive types on the "view" object will not be reflected on the original column-based store. **Proxy** objects add `.prototype.commit()` to update the source columns and keep your data consistent.
