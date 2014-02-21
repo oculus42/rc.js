@@ -1,12 +1,11 @@
 /**
  * rc.js - Row/Column Conversions
- * v0.02.1 - Closure Compiler support, additional comments
+ * v0.03 - Fixed rc.rotate, added Opt for minification
  */
- 
- 
+
 (function(root){
 	"use strict";
-	
+
 	/**
 	 * Create an object and add a .commit() prototype to place the values back into the original.
 	 * Useful for moving simple data types around. Objects and arrays will be automatically referenced.
@@ -17,13 +16,13 @@
 	 */
 	function Proxy(obj, index, clearUndef) {
 		var att;
-				
+
 		for ( att in obj ) {
 			if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][index] !== undefined ) ) {
 				this[att] = obj[att][index];
 			}
 		}
-	
+
 		// Defined inside the constructor to give it access to the originating object and parameters
 		Proxy.prototype.commit = function(){
 			var att;
@@ -34,15 +33,16 @@
 			}
 		};
 	}
-	
-	var self = {
+
+	var Opt = Object.prototype.toString,
+		self = {
 		array: {
 			getIndexes: function(array, filter) {
 				var indexes = [], 
 					len = array.length, 
 					isFn = (typeof filter === 'function'),
 					i;
-					
+
 				for (i = 0; i < len; i++) {
 					if ( ( isFn && filter.call(null, i, array[i]) ) || ( !isFn && array[i] === filter ) ) {
 						indexes.push(i);
@@ -53,7 +53,7 @@
 			getByIndexes: function(array, indexes) {
 				var len = indexes.length,
 					data = [];
-					
+
 				for (;len;) {
 					len--;
 					data[len] = array[indexes[len]];
@@ -62,16 +62,16 @@
 			},
 			rotate: function(arr, result, limited, softFail) {
 				var obj, len, i, att, has;
-				
+
 				// Not an array? Send it back.
-				if ( Object.prototype.toString.call(arr) !== '[object Array]' ) {
+				if ( Opt.call(arr) !== '[object Array]' ) {
 					throw new TypeError("RC: Argument is not an array");
 				}
-				
+
 				// Clean truthy/falsy values & undefined
 				limited = !!limited;
 				softFail = !!softFail;
-				
+
 				if ( !!result || typeof result !== 'object' ) {
 					if ( limited ) {
 						throw new TypeError("RC: Must pass a result object when 'limited' is true");
@@ -79,11 +79,12 @@
 						result = {};
 					}
 				}				
-				
+
 				len = arr.length;
-				
+
 				for ( i = 0; i < len; i++ ) {
 					obj = arr[i];
+
 					if (typeof obj !== "object") {
 						if ( !softFail ) {
 							throw new TypeError("RC: Nested element is not an object");
@@ -93,7 +94,7 @@
 						for (att in obj) {
 							if ( obj.hasOwnProperty(att) ) {
 								has = result.hasOwnProperty(att);
-								
+
 								if ( !has ) {
 									if ( limited ) { 
 										continue; 
@@ -101,13 +102,11 @@
 										result[att] = [];
 									}
 								}
-								
 								result[att][i] = obj[att];
 							}
 						}
 					}
 				}
-				
 				return result;
 			}
 		},
@@ -126,7 +125,7 @@
 			filterMerge: function(obj, indexes) {
 				var result = {},
 					att;
-				
+
 				if ( indexes ) {
 					for (att in obj) {
 						if ( obj.hasOwnProperty(att) ) {
@@ -143,20 +142,20 @@
 				if ( typeof obj !== 'object' ) {
 					throw new TypeError("RC: Argument is not an object");
 				}
-				
+
 				if ( result === undefined ) {
 					result = [];
 				} else if ( Object.prototype.toString.call(result) !== '[object Array]' ) {
 					throw new TypeError("RC: Result argument is an array");
 				}
-				
+
 				// Get the longest length of all properties
 				for (att in obj) {
 					if ( obj.hasOwnProperty(att) ) {
 						len = Math.max(len, att.length);
 					}
 				}
-				
+
 				for (i = 0; i < len; i++) {
 					if ( result[i] === undefined ) {
 						result[i] = {};
@@ -170,7 +169,7 @@
 						}
 					}
 				}
-				
+
 				return result;
 			},
 			objFromIndex: function(obj, index, clearUndef) {
@@ -183,13 +182,13 @@
 		rotate: function(obj) {
 			// Generic, which directs to the appropriate array/object rotate
 			if (typeof obj !== 'object') throw new TypeError("RC: rotate requires an object or an array");
-			if ( Object.prototype.toString.call(obj) !== '[object Array]' ) {
+			if ( Opt.call(obj) === '[object Array]' ) {
 				return self.array.rotate.apply(this, arguments);
 			} else {
 				return self.object.rotate.apply(this, arguments);
 			}
 		},
-		version: 'v0.02.1'
+		version: 'v0.03'
 	};
 	
 	root.rc = self;
@@ -202,7 +201,7 @@
 	 */
 	root.RC = function(obj, clearUndef) {
 		var att;
-		
+
 		for ( att in obj ) {
 			if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att] !== undefined ) ) {
 				this[att] = obj[att];
@@ -219,5 +218,4 @@
 	root.RC.prototype.rotate = function(mergeObj, clearUndef) {
 		return self.object.rotate(this, mergeObj, clearUndef);
 	};
-	
 }(this));
