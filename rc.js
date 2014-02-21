@@ -189,7 +189,7 @@
 				return self.object.rotate.apply(this, arguments);
 			}
 		},
-		version: 'v0.03'
+		version: 'v0.02.1'
 	};
 	
 	root.rc = self;
