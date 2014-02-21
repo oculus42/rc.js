@@ -1,7 +1,6 @@
 /**
  * rc.js - Row/Column Conversions
- * v0.01 - First release
- * v0.02 - Better filter support
+ * v0.02.1 - Closure Compiler support, additional comments
  */
  
  
@@ -11,6 +10,10 @@
 	/**
 	 * Create an object and add a .commit() prototype to place the values back into the original.
 	 * Useful for moving simple data types around. Objects and arrays will be automatically referenced.
+	 * @constructor
+	 * @param obj - A columnar object
+	 * @param {number} index - The index to convert into a row-based object
+	 * @param {Boolean} [clearUndef] - Clear undefined attributes when copying the object.
 	 */
 	function Proxy(obj, index, clearUndef) {
 		var att;
@@ -21,6 +24,7 @@
 			}
 		}
 	
+		// Defined inside the constructor to give it access to the originating object and parameters
 		Proxy.prototype.commit = function(){
 			var att;
 			for ( att in this ) {
@@ -29,7 +33,6 @@
 				}
 			}
 		};
-	
 	}
 	
 	var self = {
@@ -186,12 +189,17 @@
 				return self.object.rotate.apply(this, arguments);
 			}
 		},
-		version: 'v0.02'
+		version: 'v0.03'
 	};
 	
 	root.rc = self;
 
 	// Can we build a chaining mode?
+	/**
+	 * @constructor
+	 * @param obj - A (hopefully) columnar object
+	 * @param {Boolean} [clearUndef] - Clear undefined attributes when copying the object.
+	 */
 	root.RC = function(obj, clearUndef) {
 		var att;
 		
