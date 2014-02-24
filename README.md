@@ -8,6 +8,7 @@ While JSON arrays of objects are very familiar for representing collections of d
 Performance Comparisons
 ---
 *  [Single Column Filter](http://jsperf.com/rc-simple) — For simple single-column comparisons, rc is 40-400% faster.
+*  [Simple Equivalence Filter](http://jsperf.com/rc-equiv) — Simple equivalence is an order of magnitude faster than native row filtering.
 *  More to come.
 
 Problems with Rows
