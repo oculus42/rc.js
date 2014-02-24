@@ -7,7 +7,7 @@ While JSON arrays of objects are very familiar for representing collections of d
 
 Performance Comparisons
 ---
-*  [Single Column Filter}(http://jsperf.com/rc-simple) — For simple single-column comparisons, rc is 40-400% faster.
+*  [Single Column Filter](http://jsperf.com/rc-simple) — For simple single-column comparisons, rc is 40-400% faster.
 *  More to come.
 
 Problems with Rows
