@@ -5,6 +5,11 @@ While JSON arrays of objects are very familiar for representing collections of d
 
 **rc.js** provides tools for converting between rows and columns and interacting with columnar data.
 
+Performance Comparisons
+---
+*  [Single Column Filter}(http://jsperf.com/rc-simple) — For simple single-column comparisons, rc is 40-400% faster.
+*  More to come.
+
 Problems with Rows
 ----
 *  Each JSON row includes a header (the key in a key-value pair) for each record. For heterogeneous data, rearranging this into columns removes the weight of the header during transmission. Rows with optional keys add `undefined` values, but may still be smaller depending on column counts and names.
@@ -23,6 +28,8 @@ Problems with Columns
 ----
 *  There is no native column-based filtering.
 *  Columns are inconvenient for interacting with a single record (row).
+*  Lack of 3rd-party library support for columns.
+
 
 RC Solutions
 ----
