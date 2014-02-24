@@ -1,7 +1,6 @@
 /**
  * rc.js - Row/Column Conversions
- * v0.03 - Fixed rc.rotate, added Opt for minification
- */
+ * v0.04 - getIndexes performance improvement */
 
 (function(root){
 	"use strict";
@@ -38,17 +37,24 @@
 		self = {
 		array: {
 			getIndexes: function(array, filter) {
-				var indexes = [], 
-					len = array.length, 
+				var indexes = [],
+					len = array.length,
 					isFn = (typeof filter === 'function'),
 					i;
-
-				for (i = 0; i < len; i++) {
-					if ( ( isFn && filter.call(null, i, array[i]) ) || ( !isFn && array[i] === filter ) ) {
-						indexes.push(i);
+						
+				if (isFn) {
+					for (i = 0; i < len; i++) {
+						if ( filter(i, array[i]) ) {
+							indexes.push(i);
+						}
+					}
+				} else {
+					for (i = 0; i < len; i++) {
+						if ( array[i] === filter ) {
+							indexes.push(i);
+						}
 					}
 				}
-				return indexes;
 			},
 			getByIndexes: function(array, indexes) {
 				var len = indexes.length,
@@ -78,7 +84,7 @@
 					} else {
 						result = {};
 					}
-				}				
+				}
 
 				len = arr.length;
 
@@ -96,9 +102,9 @@
 								has = result.hasOwnProperty(att);
 
 								if ( !has ) {
-									if ( limited ) { 
-										continue; 
-									} else { 
+									if ( limited ) {
+										continue;
+									} else {
 										result[att] = [];
 									}
 								}
@@ -116,7 +122,7 @@
 			},
 			filterIndexes: function(obj, field, filter) {
 				var indexes = false;
-				
+
 				if ( obj.hasOwnProperty(field) ) {
 					indexes = self.array.getIndexes(obj[field], filter);
 				}
@@ -188,9 +194,9 @@
 				return self.object.rotate.apply(this, arguments);
 			}
 		},
-		version: 'v0.03'
+		version: 'v0.04'
 	};
-	
+
 	root.rc = self;
 
 	// Can we build a chaining mode?
@@ -206,9 +212,9 @@
 			if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att] !== undefined ) ) {
 				this[att] = obj[att];
 			}
-		}	
+		}
 	};
-	
+
 	root.RC.prototype.filter = function(field, filter) {
 		return new root.RC(self.object.filter(this, field, filter));
 	};
