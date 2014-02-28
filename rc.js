@@ -1,7 +1,7 @@
 /**
  * rc.js - Row/Column Conversions
  * v0.04 - getIndexes performance improvement
- * v0.04r1 - rotate tests
+ * v0.04r2 - hasOwnProperty replaced with strict equiv -- is this a concern?
  */
 
 (function(root){
@@ -102,7 +102,7 @@
 					} else {
 						for (att in obj) {
 							if ( obj.hasOwnProperty(att) ) {
-								if ( ! result.hasOwnProperty(att); ) {
+								if ( result[att] === undefined ) {
 									if ( limited ) {
 										continue;
 									} else {
