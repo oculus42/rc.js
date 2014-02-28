@@ -1,3 +1,4 @@
+// http://jsperf.com/rc-rotate-tests/2
 var rowData = [],i, j, ob;
 
 for (i=0; i < 1e3; i++) {
@@ -151,5 +152,47 @@ var Opt = Object.prototype.toString,
 			}
 		}
 		return result;
+	},
+	
+	rotate_obj =  function(arr, result, limited, softFail) {
+		var obj, i, att, has;
+	
+		// Not an array? Send it back.
+		if ( Opt.call(arr) !== '[object Array]' ) {
+			throw new TypeError("RC: Argument is not an array");
+		}
+	
+		// Clean truthy/falsy values & undefined
+		limited = !!limited;
+		softFail = !!softFail;
+	
+		if ( !!result || typeof result !== 'object' ) {
+			if ( limited ) {
+				throw new TypeError("RC: Must pass a result object when 'limited' is true");
+			} else {
+				result = {};
+			}
+		}
+	
+		for ( i = arr.length; i; ) {
+			i--;
+			obj = arr[i];
+	
+			// All variables submit to for-in loops
+			for (att in obj) {
+				if ( obj.hasOwnProperty(att) ) {
+					if ( result[att] === undefined ) {
+						if ( limited ) {
+							continue;
+						} else {
+							result[att] = [];
+						}
+					}
+					result[att][i] = obj[att];
+				}
+			}
+		}
+		return result;
 	};
+
 

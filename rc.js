@@ -1,7 +1,7 @@
 /**
  * rc.js - Row/Column Conversions
  * v0.04 - getIndexes performance improvement
- * v0.04r2 - hasOwnProperty replaced with strict equiv -- is this a concern?
+ * v0.04r3 - removed extraneous typeof check
  */
 
 (function(root){
@@ -94,23 +94,16 @@
 					i--;
 					obj = arr[i];
 
-					if (typeof obj !== "object") {
-						if ( !softFail ) {
-							throw new TypeError("RC: Nested element is not an object");
-						}
-						// Otherwise skip this loop
-					} else {
-						for (att in obj) {
-							if ( obj.hasOwnProperty(att) ) {
-								if ( result[att] === undefined ) {
-									if ( limited ) {
-										continue;
-									} else {
-										result[att] = [];
-									}
+					for (att in obj) {
+						if ( obj.hasOwnProperty(att) ) {
+							if ( result[att] === undefined ) {
+								if ( limited ) {
+									continue;
+								} else {
+									result[att] = [];
 								}
-								result[att][i] = obj[att];
 							}
+							result[att][i] = obj[att];
 						}
 					}
 				}
