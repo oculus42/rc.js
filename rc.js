@@ -1,7 +1,6 @@
 /**
  * rc.js - Row/Column Conversions
- * v0.04 - getIndexes performance improvement
- * v0.04r3 - removed extraneous typeof check
+ * v0.05 - array.rotate performance improvements
  */
 
 (function(root){
@@ -94,6 +93,7 @@
 					i--;
 					obj = arr[i];
 
+					// All variables submit to for-in loops
 					for (att in obj) {
 						if ( obj.hasOwnProperty(att) ) {
 							if ( result[att] === undefined ) {
@@ -188,12 +188,13 @@
 				return self.object.rotate.apply(this, arguments);
 			}
 		},
-		version: 'v0.04'
+		version: 'v0.05'
 	};
 
 	root.rc = self;
 
 	// Can we build a chaining mode?
+	// Should we move this into the same namespace?
 	/**
 	 * @constructor
 	 * @param obj - A (hopefully) columnar object
