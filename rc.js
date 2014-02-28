@@ -1,6 +1,8 @@
 /**
  * rc.js - Row/Column Conversions
- * v0.04 - getIndexes performance improvement */
+ * v0.04 - getIndexes performance improvement
+ * v0.04r1 - rotate tests
+ */
 
 (function(root){
 	"use strict";
@@ -67,7 +69,7 @@
 				return data;
 			},
 			rotate: function(arr, result, limited, softFail) {
-				var obj, len, i, att, has;
+				var obj, i, att;
 
 				// Not an array? Send it back.
 				if ( Opt.call(arr) !== '[object Array]' ) {
@@ -86,9 +88,10 @@
 					}
 				}
 
-				len = arr.length;
+				i = arr.length;
 
-				for ( i = 0; i < len; i++ ) {
+				for (;i;) {
+					i--;
 					obj = arr[i];
 
 					if (typeof obj !== "object") {
@@ -99,9 +102,7 @@
 					} else {
 						for (att in obj) {
 							if ( obj.hasOwnProperty(att) ) {
-								has = result.hasOwnProperty(att);
-
-								if ( !has ) {
+								if ( ! result.hasOwnProperty(att); ) {
 									if ( limited ) {
 										continue;
 									} else {
