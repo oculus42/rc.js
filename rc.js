@@ -1,6 +1,7 @@
 /**
  * rc.js - Row/Column Conversions
- * v0.04 - getIndexes performance improvement */
+ * v0.05 - array.rotate performance improvements
+ */
 
 (function(root){
 	"use strict";
@@ -67,7 +68,7 @@
 				return data;
 			},
 			rotate: function(arr, result, limited, softFail) {
-				var obj, len, i, att, has;
+				var obj, i, att;
 
 				// Not an array? Send it back.
 				if ( Opt.call(arr) !== '[object Array]' ) {
@@ -86,30 +87,23 @@
 					}
 				}
 
-				len = arr.length;
+				i = arr.length;
 
-				for ( i = 0; i < len; i++ ) {
+				for (;i;) {
+					i--;
 					obj = arr[i];
 
-					if (typeof obj !== "object") {
-						if ( !softFail ) {
-							throw new TypeError("RC: Nested element is not an object");
-						}
-						// Otherwise skip this loop
-					} else {
-						for (att in obj) {
-							if ( obj.hasOwnProperty(att) ) {
-								has = result.hasOwnProperty(att);
-
-								if ( !has ) {
-									if ( limited ) {
-										continue;
-									} else {
-										result[att] = [];
-									}
+					// All variables submit to for-in loops
+					for (att in obj) {
+						if ( obj.hasOwnProperty(att) ) {
+							if ( result[att] === undefined ) {
+								if ( limited ) {
+									continue;
+								} else {
+									result[att] = [];
 								}
-								result[att][i] = obj[att];
 							}
+							result[att][i] = obj[att];
 						}
 					}
 				}
@@ -194,12 +188,13 @@
 				return self.object.rotate.apply(this, arguments);
 			}
 		},
-		version: 'v0.04'
+		version: 'v0.05'
 	};
 
 	root.rc = self;
 
 	// Can we build a chaining mode?
+	// Should we move this into the same namespace?
 	/**
 	 * @constructor
 	 * @param obj - A (hopefully) columnar object
