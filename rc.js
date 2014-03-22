@@ -1,6 +1,6 @@
 /**
  * rc.js - Row/Column Conversions
- * v0.05 - array.rotate performance improvements
+ * v0.06 - Proxy fixes
  */
 
 (function(root){
@@ -14,25 +14,81 @@
 	 * @param {number} index - The index to convert into a row-based object
 	 * @param {Boolean} [clearUndef] - Clear undefined attributes when copying the object.
 	 */
-	function Proxy(obj, index, clearUndef) {
-		var att;
-
-		for ( att in obj ) {
-			if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][index] !== undefined ) ) {
-				this[att] = obj[att][index];
+	var Proxy = (function() {
+			var __obj = [],
+				__idx = [],
+				__clr = [],
+				__this = [],
+				guid = 0;
+	
+		function __getId(proxy) {
+			var i = __this.length, pid;
+	
+			// Most likely to be at the end, so start there
+			for (;i;) {
+				i--;
+				if (__this[i] === proxy) {
+					pid = i;
+					break;
+				}
+			}
+	
+			if (pid === undefined) {
+				throw new ReferenceError("Proxy is finalized and cannot be used again.");   
+			}
+			return pid;
+		}
+	
+		function Proxy(obj, index, clearUndef) {
+	
+			var att;
+	
+			// Increment the guid
+			++guid;
+	
+			// Set the private data.
+			__obj[guid] = obj;
+			__idx[guid] = index;
+			__clr[guid] = clearUndef;
+			__this[guid] = this;
+	
+			for ( att in obj ) {
+				if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][index] !== undefined ) ) {
+					this[att] = obj[att][index];
+				}
 			}
 		}
-
+	
 		// Defined inside the constructor to give it access to the originating object and parameters
 		Proxy.prototype.commit = function(){
-			var att;
+			var guid = __getId(this), 
+				obj = __obj[guid],
+				index = __idx[guid],
+				clearUndef = __clr[guid],
+				att;
+	
 			for ( att in this ) {
-				if ( this.hasOwnProperty(att) && ( !clearUndef || this[att] !== undefined ) ) {
+				if ( att !== '__rcProxyId' && this.hasOwnProperty(att) && ( !clearUndef || this[att] !== undefined ) ) {
 					obj[att][index] = this[att];
 				}
 			}
 		};
-	}
+	
+		Proxy.prototype.destroy = function() {
+			var guid = __getId(this);
+			delete __this[guid];
+			delete __obj[guid];
+			delete __idx[guid];
+			delete __clr[guid];
+		};
+	
+		Proxy.prototype.finalize = function() {
+			this.commit();
+			this.destroy();
+		};
+	
+		return Proxy;
+	})();
 
 	var Opt = Object.prototype.toString,
 		self = {
