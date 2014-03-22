@@ -41,7 +41,7 @@ The simple column-based filter supports strict comparison intended for primitive
 *  `rc.object.filterMerge(obj, indexes)` - Allows a filter action with an external source of indexes.
 
 ###Proxy
-Extracting a row for viewing and interaction is convenient, but changes to primitive types on the "view" object will not be reflected on the original column-based store. **Proxy** objects add `.prototype.commit()` to update the source columns and keep your data consistent.
+Extracting a row for viewing and interaction is convenient, but changes to primitive types on the "view" object will not be reflected on the original column-based store. **Proxy** objects add `.commit()` and `.finalize()` to update the source columns and keep your data consistent. Proxy stores copies and/or references of the information passed when a proxy is created, so you must use the `.destroy()` or `.finalize()` method to avoid memory leaks.
 
 ###Rotate
 RC provides `rc.rotate` to convert arrays of objects (rows) and objects of arrays (columns) back and forth. This allows the compact transmission of columns while existing row-based code. Performance testing is recommended if you are rotating large datasets.
