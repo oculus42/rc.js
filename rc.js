@@ -244,7 +244,7 @@
 				return self.object.rotate.apply(this, arguments);
 			}
 		},
-		version: 'v0.05'
+		version: 'v0.06'
 	};
 
 	root.rc = self;
