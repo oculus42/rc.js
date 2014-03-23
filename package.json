@@ -1,0 +1,14 @@
+{
+  "name": "rc",
+  "version": "0.1.0",
+  "description": "A library for row-column data manipulation.",
+  "main": "index.js",
+  "scripts": {
+    "test": "//grunt mocha"
+  },
+  "author": "Samuel Rouse <samuel.rouse@gmail.com> (http://samuelrouse.com)",
+  "license": "MIT",
+  "bugs": "https://github.com/oculus42/rc.js/issues",
+  "repository": "oculus42/rc.js",
+  "engines": ["node", "rhino"]
+}
