@@ -2,7 +2,7 @@
  * rc - a library for row-column data manipulation
  * @module rc
  * @author Samuel Rouse <samuel.rouse@gmail.com>
- * @license MIT
+ * @license MIT http://opensource.org/licenses/MIT
  */
 
 (function() {
