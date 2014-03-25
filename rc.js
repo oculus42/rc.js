@@ -168,7 +168,7 @@
 		// Get the longest length of all properties
 		for (att in obj) {
 			if ( obj.hasOwnProperty(att) ) {
-				len = Math.max(len, att.length);
+				len = Math.max(len, obj[att].length);
 			}
 		}
 	
