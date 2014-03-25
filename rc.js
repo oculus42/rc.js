@@ -17,7 +17,7 @@
 	/** Used as a safe reference for `undefined` in pre ES5 environments */
 	var undefined;
 	
-	var version = "0.1.0";
+	var version = "0.1.1";
 	
 	/** Used to determine if values are of the language type Object */
 	var objectTypes = {
