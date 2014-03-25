@@ -1,6 +1,6 @@
 /**
- * rc - a library for row-column data manipulation
- * @module rc
+ * rowcol - a library for row-column data manipulation
+ * @module rowcol
  * @author Samuel Rouse <samuel.rouse@gmail.com>
  * @license MIT http://opensource.org/licenses/MIT
  */
@@ -293,7 +293,7 @@
 		
 	/*--------------------------------------------------------------------------*/
 	
-	var rc = {
+	var rowcol = {
 		rotate: rotate,
 		proxy: objFromIndex,
 		array: {
@@ -314,6 +314,6 @@
 
 	/*--------------------------------------------------------------------------*/
 	
-	root.rc = rc;
+	root.rowcol = rowcol;
 
 }.call(this));
