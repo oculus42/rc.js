@@ -17,7 +17,7 @@
 	/** Used as a safe reference for `undefined` in pre ES5 environments */
 	var undefined;
 	
-	var version = "0.1.1";
+	var version = "0.1.2";
 	
 	/** Used to determine if values are of the language type Object */
 	var objectTypes = {
@@ -223,10 +223,11 @@
 			guid = 0;
 	
 		function __getId(proxy) {
-			var len = __this.length, pid, i;
+			var i = __this.length, pid;
 	
 			// Most likely to be at the end, so start there
-			for (i = len; i; i--) {
+			for (;i;) {
+				i--;
 				if (__this[i] === proxy) {
 					pid = i;
 					break;
