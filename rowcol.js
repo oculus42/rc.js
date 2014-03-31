@@ -17,7 +17,7 @@
 	/** Used as a safe reference for `undefined` in pre ES5 environments */
 	var undefined;
 	
-	var version = "0.1.2";
+	var version = "0.1.3";
 	
 	/** Used to determine if values are of the language type Object */
 	var objectTypes = {
@@ -189,7 +189,23 @@
 		return result;
 	}
 		
-	function objFromIndex (obj, index, clearUndef) {
+	function objFromIndex (obj, index, clearUndef, result) {
+		var att;
+		
+		if ( result === undefined ) {
+			result = {};
+		}
+			
+		for ( att in obj ) {
+			if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][index] !== undefined ) ) {
+				result[att] = obj[att][index];
+			}
+		}
+		
+		return result;
+	}
+	
+	function proxyFromIndex (obj, index, clearUndef) {
 		return new Proxy(obj, index, clearUndef);
 	}
 	
@@ -198,9 +214,9 @@
 		if (typeof obj !== 'object') throw new TypeError("RC: rotate requires an object or an array");
 		
 		if ( Opt.call(obj) === '[object Array]' ) {
-			return arrayRotate.apply(this, arguments);
+			return arrayRotate.apply(null, arguments);
 		} else {
-			return objectRotate.apply(this, arguments);
+			return objectRotate.apply(null, arguments);
 		}
 	}
 	
@@ -242,8 +258,6 @@
 	
 		function Proxy (obj, index, clearUndef) {
 	
-			var att;
-	
 			// Increment the guid
 			++guid;
 	
@@ -253,11 +267,8 @@
 			__clr[guid] = clearUndef;
 			__this[guid] = this;
 	
-			for ( att in obj ) {
-				if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][index] !== undefined ) ) {
-					this[att] = obj[att][index];
-				}
-			}
+			// Call reusable code for objFromIndex
+			objFromIndex(obj, index, clearUndef, this);
 		}
 	
 		// Defined inside the constructor to give it access to the originating object and parameters
@@ -296,7 +307,7 @@
 	
 	var rowcol = {
 		rotate: rotate,
-		proxy: objFromIndex,
+		proxy: proxyFromIndex,
 		array: {
 			getIndexes: getIndexes,
 			getByIndexes: getByIndexes,
@@ -308,13 +319,40 @@
 			filterMerge: filterMerge,
 			rotate: objectRotate,
 			objFromIndex: objFromIndex,
-			proxy: objFromIndex
+			proxy: proxyFromIndex
 		},
 		VERSION: version
 	};
 
 	/*--------------------------------------------------------------------------*/
 	
-	root.rowcol = rowcol;
+	// some AMD build optimizers like r.js check for condition patterns like the following:
+	if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
+	  // Expose to the global object even when an AMD loader is present in
+	  // case RowCol is loaded with a RequireJS shim config.
+	  // See http://requirejs.org/docs/api.html#config-shim
+	  root.rowcol = rowcol;;
+	
+	  // define as an anonymous module so, through path mapping, it can be
+	  // referenced as the "underscore" module
+	  define(function() {
+		return rowcol;
+	  });
+	}
+	// check for `exports` after `define` in case a build optimizer adds an `exports` object
+	else if (freeExports && freeModule) {
+	  // in Node.js or RingoJS
+	  if (moduleExports) {
+		(freeModule.exports = rowcol).rowcol = rowcol;
+	  }
+	  // in Narwhal or Rhino -require
+	  else {
+		freeExports.rowcol = rowcol;
+	  }
+	}
+	else {
+	  // in a browser or Rhino
+	  root.rowcol = rowcol;;
+	}
 
 }.call(this));
