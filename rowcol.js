@@ -17,7 +17,7 @@
 	/** Used as a safe reference for `undefined` in pre ES5 environments */
 	var undefined;
 	
-	var version = "0.1.3";
+	var version = "0.1.4";
 	
 	/** Used to determine if values are of the language type Object */
 	var objectTypes = {
@@ -57,7 +57,7 @@
 	
 		if (isFn) {
 			for (i = 0; i < len; i++) {
-				if ( objectFilter(i, array[i]) ) {
+				if ( filter(i, array[i]) ) {
 					indexes.push(i);
 				}
 			}
@@ -68,6 +68,7 @@
 				}
 			}
 		}
+		return indexes;
 	}
 	
 	function getByIndexes (array, indexes) {
@@ -192,6 +193,7 @@
 	function objFromIndex (obj, index, clearUndef, result) {
 		var att;
 		
+		// Check for a passed result object, used by Proxy
 		if ( result === undefined ) {
 			result = {};
 		}
