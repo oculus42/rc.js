@@ -17,7 +17,7 @@
 	/** Used as a safe reference for `undefined` in pre ES5 environments */
 	var undefined;
 	
-	var version = "0.1.4";
+	var version = "0.2.0";
 	
 	/** Used to determine if values are of the language type Object */
 	var objectTypes = {
@@ -152,8 +152,21 @@
 		return result;
 	}
 	
+	function objectLength (obj) {
+		var att, len = 0;
+		
+		// Get the longest length of all properties
+		for (att in obj) {
+			if ( obj.hasOwnProperty(att) ) {
+				len = Math.max(len, obj[att].length);
+			}
+		}
+		
+		return len;
+	}
+	
 	function objectRotate (obj, result, clearUndef) {
-		var att, i, len = 0;
+		var att, i, len;
 	
 		// Not an array? Send it back.
 		if ( typeof obj !== 'object' ) {
@@ -165,13 +178,8 @@
 		} else if ( Object.prototype.toString.call(result) !== '[object Array]' ) {
 			throw new TypeError("RC: Result argument is an array");
 		}
-	
-		// Get the longest length of all properties
-		for (att in obj) {
-			if ( obj.hasOwnProperty(att) ) {
-				len = Math.max(len, obj[att].length);
-			}
-		}
+
+		len = objectLength(obj);
 	
 		for (i = 0; i < len; i++) {
 			if ( result[i] === undefined ) {
@@ -193,7 +201,7 @@
 	function objFromIndex (obj, index, clearUndef, result) {
 		var att;
 		
-		// Check for a passed result object, used by Proxy
+		// Check for a passed result object, used by Proxy/objFromIndex
 		if ( result === undefined ) {
 			result = {};
 		}
@@ -222,6 +230,32 @@
 		}
 	}
 	
+	function readEach(obj, fn) {
+		var len = objectLength(obj),
+			i = 0;
+		
+		for (;i<len;i++) {
+			fn(objFromIndex(obj, i));
+		}
+	}
+
+	/**
+	 * Loop through the object, with edit support, using Proxy()
+	 */
+	function objEach(obj, fn) {
+		var len = objectLength(obj),
+			i = 0,
+			prox;
+		
+		for (;i<len;i++) {
+			prox = new Proxy(obj, i);
+			
+			fn(prox, i);
+			
+			prox.finalize();
+		}
+	}
+		
 	
 	/**
 	 * Create an object and add a .commit() prototype to place the values back into the original.
@@ -321,7 +355,10 @@
 			filterMerge: filterMerge,
 			rotate: objectRotate,
 			objFromIndex: objFromIndex,
-			proxy: proxyFromIndex
+			proxy: proxyFromIndex,
+			readEach: readEach,
+			each: objEach,
+			objLength: objectLength
 		},
 		VERSION: version
 	};
@@ -333,7 +370,7 @@
 	  // Expose to the global object even when an AMD loader is present in
 	  // case RowCol is loaded with a RequireJS shim config.
 	  // See http://requirejs.org/docs/api.html#config-shim
-	  root.rowcol = rowcol;;
+	  root.rowcol = rowcol;
 	
 	  // define as an anonymous module so, through path mapping, it can be
 	  // referenced as the "underscore" module
@@ -354,7 +391,7 @@
 	}
 	else {
 	  // in a browser or Rhino
-	  root.rowcol = rowcol;;
+	  root.rowcol = rowcol;
 	}
 
 }.call(this));

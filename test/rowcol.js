@@ -12,6 +12,9 @@ var rowData = [
 		approved: [true,true,false]
 	};
 
+/* Simple Length Test */
+assert.equal(rowcol.object.objLength(colData), 3, "objLength")
+
 /* Explicit Rotates */
 assert.equal(JSON.stringify(rowcol.array.rotate(rowData)), JSON.stringify(colData), "row->col rotation - explicit");
 assert.equal(JSON.stringify(rowcol.object.rotate(colData)), JSON.stringify(rowData), "col->row rotation - explicit");
@@ -50,3 +53,23 @@ assert.equal(colData.name[1], "B", "proxy: finalize prior value");
 
 prox.finalize();
 assert.equal(colData.name[1], "D", "proxy: finalize value mismatch");
+
+
+/* Each Tests */
+var eachLen = 0;
+rowcol.object.readEach(colData, function(obj, idx){
+	eachLen++;
+	obj.id = 4;
+});
+
+assert(eachLen === 3,"readEach: not looping through entire object");
+
+assert(colData.id[0] === 1, "readEach: able to edit original");
+
+eachLen = 0;
+rowcol.object.each(colData, function(obj, idx){
+	eachLen++;
+	obj.id = 4;
+});
+
+assert(colData.id.toString() === '4,4,4', "each: changes were not permanent");
