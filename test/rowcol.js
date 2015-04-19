@@ -57,6 +57,38 @@ describe('rowcol', function(){
             assert(idxTest.hasOwnProperty("commit") === false, "objFromIndex: provides proxy interface");
         });
 
+        /* Each Tests */
+        describe('#readEach', function() {
+
+            var eachLen = 0;
+
+            rowcol.object.readEach(colData, function (obj, idx) {
+                eachLen++;
+                obj.id = 4;
+            });
+
+            assert(eachLen === 3, "readEach: not looping through entire object");
+
+            assert(colData.id[0] === 1, "readEach: able to edit original");
+        });
+
+        /* Each Tests */
+        describe('#each', function(){
+            var colData = colData = {
+                    id: [1,2,3],
+                    name: ["A","B","C"],
+                    approved: [true,true,false]
+                },
+                eachLen = 0;
+
+            rowcol.object.each(colData, function(obj, idx){
+                eachLen++;
+                obj.id = 4;
+            });
+
+            assert(colData.id.toString() === '4,4,4', "each: changes were not permanent");
+        });
+
     });
 
     describe('array', function(){
@@ -75,41 +107,34 @@ describe('rowcol', function(){
             assert.equal(JSON.stringify(rowcol.rotate(colData)), rowString, "col->row rotation - generic");
         });
     });
+
+    describe('#proxy',function(){
+        /* Proxy Test */
+        var prox = rowcol.proxy(colData, 1);
+
+        it('should not commit when the value is set',function(){
+            prox.approved = false;
+            assert.equal(colData.approved[1], true, "proxy: commit prior value");
+        });
+
+        it('should update the value when commit is called',function(){
+            prox.commit();
+            assert.equal(colData.approved[1], false, "proxy: commit value mismatch");
+        });
+
+        it('should not commit when the value is set',function(){
+            prox.name = "D";
+            assert.equal(colData.name[1], "B", "proxy: finalize prior value");
+        });
+
+        it('should update the value when finalize is called',function(){
+            prox.finalize();
+            assert.equal(colData.name[1], "D", "proxy: finalize value mismatch");
+        });
+
+        it('should not permit changes after finalize',function(){
+            assert.throws(function(){ prox.commit(); }, ReferenceError);
+        });
+
+    });
 });
-
-
-
-/* Proxy Test */
-var prox = rowcol.proxy(colData, 1);
-
-prox.approved = false;
-assert.equal(colData.approved[1], true, "proxy: commit prior value");
-
-prox.commit();
-assert.equal(colData.approved[1], false, "proxy: commit value mismatch");
-
-prox.name = "D";
-assert.equal(colData.name[1], "B", "proxy: finalize prior value");
-
-prox.finalize();
-assert.equal(colData.name[1], "D", "proxy: finalize value mismatch");
-
-
-/* Each Tests */
-var eachLen = 0;
-rowcol.object.readEach(colData, function(obj, idx){
-	eachLen++;
-	obj.id = 4;
-});
-
-assert(eachLen === 3,"readEach: not looping through entire object");
-
-assert(colData.id[0] === 1, "readEach: able to edit original");
-
-eachLen = 0;
-rowcol.object.each(colData, function(obj, idx){
-	eachLen++;
-	obj.id = 4;
-});
-
-assert(colData.id.toString() === '4,4,4', "each: changes were not permanent");
