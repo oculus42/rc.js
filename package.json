@@ -10,8 +10,5 @@
   "license": "MIT",
   "bugs": "https://github.com/oculus42/rc.js/issues",
   "repository": "oculus42/rc.js",
-  "engines": ["node", "rhino"],
-  "devDependencies": {
-    "mocha": "2.2.x"
-  }
+  "engines": ["node", "rhino"]
 }
