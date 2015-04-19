@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/oculus42/rc.js.svg?branch=master)](https://travis-ci.org/oculus42/rc.js)
+
 rowcol.js - Row/Column Data Manipulation
 =====
 
