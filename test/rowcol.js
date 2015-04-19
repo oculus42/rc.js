@@ -10,34 +10,74 @@ var rowData = [
 		id: [1,2,3],
 		name: ["A","B","C"],
 		approved: [true,true,false]
-	};
+    },
+    colString = JSON.stringify(colData),
+    rowString = JSON.stringify(rowData);
 
-/* Simple Length Test */
-assert.equal(rowcol.object.objLength(colData), 3, "objLength")
+describe('rowcol', function(){
+    describe('object', function(){
 
-/* Explicit Rotates */
-assert.equal(JSON.stringify(rowcol.array.rotate(rowData)), JSON.stringify(colData), "row->col rotation - explicit");
-assert.equal(JSON.stringify(rowcol.object.rotate(colData)), JSON.stringify(rowData), "col->row rotation - explicit");
+        /* Simple Length Test */
+        describe('#objLength', function(){
+            it('should return the number of array entries of the first key', function(){
+                assert.equal(rowcol.object.objLength(colData), 3);
+            });
+        });
 
-/* Generic rotates (should work as above) */
-assert.equal(JSON.stringify(rowcol.rotate(rowData)), JSON.stringify(colData), "row->col rotation - generic");
-assert.equal(JSON.stringify(rowcol.rotate(colData)), JSON.stringify(rowData), "col->row rotation - generic");
+        /* Explicit Objecy Rotates */
+        describe('#rotate', function(){
+           it('should return an array of objects', function(){
+               assert.equal(JSON.stringify(rowcol.object.rotate(colData)), rowString, "col->row rotation - explicit");
+           });
+        });
 
-/* Filters */
-var filtTest = rowcol.object.filterIndexes(colData, "approved", true)
-assert(filtTest.length === 2 && filtTest[0] === 0 && filtTest[1] === 1, "filterIndexes: basic match");
+        /* Filters */
+        describe('#filterIndexes', function(){
 
-filtTest = rowcol.object.filterIndexes(colData, "approved", false)
-assert(filtTest.length === 1 && filtTest[0] === 2, "filterIndexes: basic match part 2");
+            it('should filter to two indexes: 0 & 1', function(){
+                var filtTest = rowcol.object.filterIndexes(colData, "approved", true);
+                assert(filtTest.length === 2 && filtTest[0] === 0 && filtTest[1] === 1);
+            });
 
-/* ObjFromIndex */
-var idxTest = rowcol.object.objFromIndex(colData, 1);
-assert.equal(idxTest.name,colData.name[1],"objFromIndex");
+            it('should filter to one result for index 2', function(){
+                var filtTest = rowcol.object.filterIndexes(colData, "approved", false)
+                assert(filtTest.length === 1 && filtTest[0] === 2);
+            });
 
-idxTest.name = "M";
-assert.equal(colData.name[1], "B", "objFromIndex: value linked to original");
+        });
 
-assert(idxTest.hasOwnProperty("commit") === false, "objFromIndex: provides proxy interface");
+        /* ObjFromIndex */
+        describe('#objFromIndex', function(){
+            var idxTest = rowcol.object.objFromIndex(colData, 1);
+            assert.equal(idxTest.name,colData.name[1]);
+
+            idxTest.name = "M";
+            assert.equal(colData.name[1], "B", "objFromIndex: value linked to original");
+
+            assert(idxTest.hasOwnProperty("commit") === false, "objFromIndex: provides proxy interface");
+        });
+
+    });
+
+    describe('array', function(){
+        /* Explicit Rotates */
+        describe('#rotate', function(){
+            it('should return an object of arrays', function(){
+                assert.equal(JSON.stringify(rowcol.array.rotate(rowData)), colString, "row->col rotation - explicit");
+            });
+        });
+    });
+
+    /* Generic rotates (should work as above) */
+    describe('#rotate', function(){
+        it('should rotate like the explicit object.rotate and array.rotate', function(){
+            assert.equal(JSON.stringify(rowcol.rotate(rowData)), colString, "row->col rotation - generic");
+            assert.equal(JSON.stringify(rowcol.rotate(colData)), rowString, "col->row rotation - generic");
+        });
+    });
+});
+
+
 
 /* Proxy Test */
 var prox = rowcol.proxy(colData, 1);
