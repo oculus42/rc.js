@@ -24,24 +24,80 @@ describe('rowcol', function(){
             });
         });
 
-        /* Explicit Objecy Rotates */
+        /* Explicit Object Rotates */
         describe('#rotate', function(){
-           it('should return an array of objects', function(){
-               assert.equal(JSON.stringify(rowcol.object.rotate(colData)), rowString, "col->row rotation - explicit");
-           });
+            it('should return an array of objects', function(){
+                assert.equal(JSON.stringify(rowcol.object.rotate(colData)), rowString, "col->row rotation - explicit");
+            });
+
+            /* Rotate into Tests */
+            var baseResult = [{
+                    id: 5,
+                    name: 'E',
+                    approved: false
+                }],
+                final = rowcol.object.rotate(colData, baseResult);
+
+            it('should modify the passed result', function(){
+                assert.equal(baseResult, final);
+            });
+
+            it('should not overwrite existing results', function(){
+                assert.equal(final.length, 4);
+                assert.equal(final[0].name, "E");
+                assert.equal(final[3].name, "C");
+            });
+
+
+            it('should not care about existing result types', function(){
+
+                assert.doesNotThrow(function() {
+                    final = rowcol.object.rotate(colData, [1,2,3]);
+                });
+
+                assert.equal(final.length, 6);
+            });
         });
 
         /* Filters */
         describe('#filterIndexes', function(){
 
-            it('should filter to two indexes: 0 & 1', function(){
+            it('should filter Boolean values', function(){
                 var filtTest = rowcol.object.filterIndexes(colData, "approved", true);
                 assert(filtTest.length === 2 && filtTest[0] === 0 && filtTest[1] === 1);
             });
 
-            it('should filter to one result for index 2', function(){
-                var filtTest = rowcol.object.filterIndexes(colData, "approved", false)
-                assert(filtTest.length === 1 && filtTest[0] === 2);
+            it('should filter string values', function(){
+                var filtTest = rowcol.object.filterIndexes(colData, "name", "B");
+                assert(filtTest.length === 1 && filtTest[0] === 1);
+            });
+
+            it('should filter using a function', function(){
+                var filtTest = rowcol.object.filterIndexes(colData, "id", function(idx, val){ return val > 1; });
+                assert(filtTest.length === 2 && filtTest[0] === 1 && filtTest[1] === 2);
+            });
+
+            it('should return an empty array for no matches', function(){
+                var filtTest = rowcol.object.filterIndexes(colData, "name", "Q");
+                assert.equal(filtTest.length, 0);
+            })
+
+        });
+
+        describe('#filterMerge', function(){
+            it('should return an empty object when passed no indexes', function(){
+                var mergeResult = rowcol.object.filterMerge(colData);
+                assert.equal(Object.keys(mergeResult).length, 0);
+            });
+
+            it('should return an empty object when passed empty indexes', function(){
+                var mergeResult = rowcol.object.filterMerge(colData, []);
+                assert.equal(Object.keys(mergeResult).length, 0);
+            });
+
+            it('should return an object when passed an index of [0]', function(){
+                var mergeResult = rowcol.object.filterMerge(colData, [0]);
+                assert.equal(Object.keys(mergeResult).length, 3);
             });
 
         });
@@ -49,15 +105,38 @@ describe('rowcol', function(){
         /* ObjFromIndex */
         describe('#objFromIndex', function(){
             var idxTest = rowcol.object.objFromIndex(colData, 1);
-            assert.equal(idxTest.name,colData.name[1]);
 
-            idxTest.name = "M";
-            assert.equal(colData.name[1], "B", "objFromIndex: value linked to original");
+            it('should extract the values for the appropriate index', function(){
+                assert.equal(idxTest.name,colData.name[1]);
+            });
 
-            assert(idxTest.hasOwnProperty("commit") === false, "objFromIndex: provides proxy interface");
+            it('should not modify the original (arrays/object values excepted)', function(){
+                idxTest.name = "M";
+                assert.equal(colData.name[1], "B", "objFromIndex: value linked to original");
+            });
+
+            it('should not be a Proxy', function(){
+                assert(idxTest.hasOwnProperty("commit") === false, "objFromIndex: provides proxy interface");
+            });
+
+            /* Object merge tests */
+            var mergeObj = { test: true},
+                resultObj;
+            it('should accept an existing object', function(){
+                assert.doesNotThrow(function(){
+                    resultObj = rowcol.object.objFromIndex(colData,1, undefined, mergeObj);
+                });
+            });
+
+            resultObj = rowcol.object.objFromIndex(colData,1, undefined, mergeObj);
+            it('should modify the passed result object', function(){
+                assert.equal(mergeObj, resultObj);
+                assert.equal(resultObj.name, 'B');
+            });
+
         });
 
-        /* Each Tests */
+        /* readEach Tests */
         describe('#readEach', function() {
 
             var eachLen = 0;
