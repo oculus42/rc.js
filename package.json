@@ -4,7 +4,7 @@
   "description": "A library for row-column data manipulation.",
   "main": "index.js",
   "scripts": {
-    "test": "//grunt mocha"
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "author": "Samuel Rouse <samuel.rouse@gmail.com> (http://samuelrouse.com)",
   "license": "MIT",
