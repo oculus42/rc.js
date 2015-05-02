@@ -15,7 +15,7 @@
 	* Structure and codes from Lo-Dash 2.4.1 <http://lodash.com/>
 	*/
 
-	var version = "0.2.2";
+	var version = "0.2.3";
 
 	/** Used to determine if values are of the language type Object */
 	var objectTypes = {
@@ -112,7 +112,7 @@
 		// TODO: Clean truthy/falsy values & undefined
 		// softFail = !!softFail;
 
-		if ( !!result || typeof result !== 'object' ) {
+		if ( !result || typeof result !== 'object' ) {
 			if ( limited ) {
 				throw new TypeError("RC: Must pass a result object when 'limited' is true");
 			} else {
@@ -124,6 +124,9 @@
 
 		for (;i;) {
 			obj = arr[--i];
+
+            // TODO - This is inefficient; use Object.keys to get the property list ahead of time?
+            // TODO - Also fails if I pass {a:undefined}... Object.keys is fine with it.
 
 			// All variables submit to for-in loops
 			for (att in obj) {
