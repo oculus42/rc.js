@@ -202,6 +202,7 @@ describe('rowcol', function(){
                 assert.equal(limitedObj.id, undefined);
             });
 
+
             it('should not overwrite existing properties of a passed value', function(){
 
                 // TODO: A passed array will be overwritten. Not sure of the direction to take.
