@@ -9,8 +9,8 @@ While JSON arrays of objects are very familiar for representing collections of d
 
 Performance Comparisons
 ---
-*  [Single Column Filter](http://jsperf.com/rc-simple) — For simple single-column comparisons, rowcol is 40-400% faster.
-*  [Simple Equivalence Filter](http://jsperf.com/rc-equiv) — Simple equivalence is an order of magnitude faster than native row filtering.
+*  [Single Column Filter](http://jsperf.com/rc-simple/5) — For simple single-column comparisons, rowcol was 40-400% faster. With time, this performance has changed. As of December 27, 2015, rowcol is now slower in Chrome and Firefox, while Safari is faster.
+*  [Simple Equivalence Filter](http://jsperf.com/rc-equiv/7) — Simple equivalence is an order of magnitude faster than native row filtering, except, strangely, in Firefox (as of December 27, 2015).
 *  More to come.
 
 Problems with Rows
