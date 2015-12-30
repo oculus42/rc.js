@@ -139,6 +139,8 @@ describe('rowcol', function(){
         /* readEach Tests */
         describe('#readEach', function() {
 
+
+
             var eachLen = 0;
 
             rowcol.object.readEach(colData, function (obj, idx) {
@@ -146,9 +148,15 @@ describe('rowcol', function(){
                 obj.id = 4;
             });
 
-            assert(eachLen === 3, "readEach: not looping through entire object");
+            it('should loop through each index', function(){
+                assert(eachLen === 3, "readEach: not looping through entire object");
+            });
 
-            assert(colData.id[0] === 1, "readEach: able to edit original");
+            it('should not allow simple values to be edited', function(){
+                assert(colData.id[0] === 1, "readEach: able to edit original");
+            });
+
+
         });
 
         /* Each Tests */
@@ -160,12 +168,18 @@ describe('rowcol', function(){
                 },
                 eachLen = 0;
 
-            rowcol.object.each(colData, function(obj, idx){
+            rowcol.object.each(colData, function(obj){
                 eachLen++;
                 obj.id = 4;
             });
 
-            assert(colData.id.toString() === '4,4,4', "each: changes were not permanent");
+            it('should loop through each index', function(){
+                assert(eachLen === 3, "readEach: not looping through entire object");
+            });
+
+            it('should commit changes to the original object', function(){
+                assert(colData.id.toString() === '4,4,4', "each: changes were not permanent");
+            });
         });
 
     });
@@ -175,6 +189,27 @@ describe('rowcol', function(){
         describe('#rotate', function(){
             it('should return an object of arrays', function(){
                 assert.equal(JSON.stringify(rowcol.array.rotate(rowData)), colString, "row->col rotation - explicit");
+            });
+
+            it('should rotate into an existing object', function(){
+                var existingObj = { extra: true };
+                var resultObj = rowcol.array.rotate(rowData, existingObj);
+                assert.equal(resultObj.extra, true);
+            });
+
+            it('should perform a limited rotate', function(){
+                var limitedObj = rowcol.array.rotate(rowData, {name: [], approved: []}, true);
+                assert.equal(limitedObj.id, undefined);
+            });
+
+
+            it('should not overwrite existing properties of a passed value', function(){
+
+                // TODO: A passed array will be overwritten. Not sure of the direction to take.
+                var existingObj = { name: true };
+                var resultObject = rowcol.array.rotate(rowData, {name: true, approved: []}, true);
+                assert.equal(resultObject.name, true);
+                assert.equal(typeof resultObject.name, 'boolean');
             });
         });
     });

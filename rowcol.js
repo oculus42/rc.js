@@ -5,32 +5,31 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 
-
 (function() {
-	"use strict";
+    "use strict";
 
-	/*--------------------------------------------------------------------------*/
-	/*
-	* Constants and basic settings
-	* Structure and codes from Lo-Dash 2.4.1 <http://lodash.com/>
-	*/
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Constants and basic settings
+     * Structure and code from Lo-Dash 2.4.1 <http://lodash.com/>
+     */
 
-	var version = "0.2.2";
+    var version = "0.2.4";
 
-	/** Used to determine if values are of the language type Object */
-	var objectTypes = {
-		'function': true,
-		'object': true
-	};
+    /** Used to determine if values are of the language type Object */
+    var objectTypes = {
+        'function': true,
+        'object': true
+    };
 
-	/** Used as a reference to the global object */
-	var root = (objectTypes[typeof window] && window) || this;
+    /** Used as a reference to the global object */
+    var root = (objectTypes[typeof window] && window) || this;
 
-	/** Detect free variable `exports` */
-	var freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports;
+    /** Detect free variable `exports` */
+    var freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports;
 
-	/** Detect free variable `module` */
-	var freeModule = objectTypes[typeof module] && module && !module.nodeType && module;
+    /** Detect free variable `module` */
+    var freeModule = objectTypes[typeof module] && module && !module.nodeType && module;
 
 	/** Detect free variable `global` from Node.js or Browserified code and use it as `root` */
 	var freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
@@ -38,14 +37,24 @@
 		root = freeGlobal;
 	}
 
-	/** Detect the popular CommonJS extension `module.exports` */
-	var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
+    /** Detect the popular CommonJS extension `module.exports` */
+    var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
 
-	var Opt = Object.prototype.toString;
 
-	/*--------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------*/
 
-	/* Functions */
+
+
+    /* Functions */
+
+    /**
+     * Indicates if the passed object is an array
+     * @param {*} obj
+     * @returns {boolean}
+     */
+    function isArray(obj){
+        return Object.prototype.toString.call(obj) === '[object Array]';
+    }
 
     /**
      * Returns an array of indexes that match a filter string or function.
@@ -80,66 +89,119 @@
      * @param {Array} indexes
      * @returns {Array}
      */
-	function getByIndexes (array, indexes) {
-		var len = indexes.length,
-			data = [];
+    function getByIndexes (array, indexes) {
+        var len = indexes.length,
+            data = [];
 
-		for (;len;) {
-			data[len] = array[indexes[--len]];
-		}
-		return data;
-	}
+        for (;len;) {
+            data[len] = array[indexes[--len]];
+        }
+        return data;
+    }
+
+    /**
+     * Performs the rotation for an unlimited (regular) rotation
+     * @param {Array} arr
+     * @param {Object} result
+     * @returns {Object}
+     */
+    function arrayRotateUnlimited (arr, result) {
+        var obj, att, i = arr.length;
+
+        for (;i;) {
+            obj = arr[--i];
+
+            // All variables submit to for-in loops
+            for (att in obj) {
+                if ( obj.hasOwnProperty(att) ) {
+                    if ( result[att] === undefined ) {
+                        result[att] = [];
+                    }
+                    result[att][i] = obj[att];
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Performs the rotation for a limited (partial) rotation
+     * @param {Array} arr
+     * @param {Object} result
+     * @param {Array|Boolean} limited
+     * @returns {Object}
+     */
+    function arrayRotateLimited (arr, result, limited) {
+        var objKeys, keyLen, obj, att, i, j;
+
+        // Is limited the list of keys?
+        if (isArray(limited)) {
+            objKeys = limited;
+            limited = true;
+        } else {
+            // Get the keys for limited rotate
+            objKeys = Object.keys(result);
+        }
+
+        keyLen = objKeys.length;
+
+        // One pass to create any missing arrays
+        for (att in objKeys) {
+            if (!isArray(result[att])) {
+                result[att] = [];
+            }
+        }
+
+        i = arr.length;
+
+        for (;i;) {
+            obj = arr[--i];
+
+            // All variables submit to for-in loops
+            // JSHint hates it, but Object.keys
+            for (j = 0; j < keyLen; j++) {
+
+                att = objKeys[j];
+                result[att][i] = obj[att];
+            }
+
+        }
+
+        return result;
+    }
 
     /**
      * Rotate an array of row-data into a column-data object
      * @param {Array} arr
      * @param {Object} [result] Result object to use
      * @param {boolean} [limited] Only update keys passed on the result object, allowing a limited rotation
-     * @param {boolean} [softFail]
      * @returns {Object}
      */
-	function arrayRotate (arr, result, limited, softFail) {
-		var obj, i, att;
+    function arrayRotate (arr, result, limited) {
 
-		// Not an array? Send it back.
-		if ( Opt.call(arr) !== '[object Array]' ) {
-			throw new TypeError("RC: Argument is not an array");
-		}
+        // Not an array? Send it back.
+        if ( !isArray(arr) ) {
+            throw new TypeError("RC: Argument is not an array");
+        }
 
-		limited = !!limited;
+        if ( !result || typeof result !== 'object' ) {
+            if ( limited ) {
+                throw new TypeError("RC: Must pass a result object when 'limited' is true");
+            } else {
+                result = {};
+            }
+        }
 
-		// TODO: Clean truthy/falsy values & undefined
-		// softFail = !!softFail;
+        // Explicit check: you could pass [0], limited could be falsy.
+        if (limited !== undefined && limited !== false) {
+            return arrayRotateLimited(arr, result, limited);
 
-		if ( !!result || typeof result !== 'object' ) {
-			if ( limited ) {
-				throw new TypeError("RC: Must pass a result object when 'limited' is true");
-			} else {
-				result = {};
-			}
-		}
+        }
 
-		i = arr.length;
+        return arrayRotateUnlimited(arr, result);
+    }
 
-		for (;i;) {
-			obj = arr[--i];
-
-			// All variables submit to for-in loops
-			for (att in obj) {
-				if ( obj.hasOwnProperty(att) ) {
-					if ( result[att] === undefined ) {
-						if ( limited ) {
-							continue;
-						} else {
-							result[att] = [];
-						}
-					}
-					result[att][i] = obj[att];
-				}
-			}
-		}
-		return result;
-	}
 
     /**
      * Filter a column-data object for a particular field.
@@ -148,9 +210,9 @@
      * @param {Function|String} filter
      * @returns {*}
      */
-	function objectFilter (obj, field, filter) {
-		return filterMerge(obj, filterIndexes(obj, field, filter));
-	}
+    function objectFilter (obj, field, filter) {
+        return filterMerge(obj, filterIndexes(obj, field, filter));
+    }
 
     /**
      *
@@ -159,14 +221,14 @@
      * @param filter
      * @returns {Array}
      */
-	function filterIndexes (obj, field, filter) {
-		var indexes = [];
+    function filterIndexes (obj, field, filter) {
+        var indexes = [];
 
-		if ( obj.hasOwnProperty(field) ) {
-			indexes = getIndexes(obj[field], filter);
-		}
-		return indexes;
-	}
+        if ( obj.hasOwnProperty(field) ) {
+            indexes = getIndexes(obj[field], filter);
+        }
+        return indexes;
+    }
 
     /**
      * Filters all properties in a column-data object using an array of indexes.
@@ -174,9 +236,9 @@
      * @param {Array} indexes
      * @returns {Object}
      */
-	function filterMerge(obj, indexes) {
-		var result = {},
-			att;
+    function filterMerge(obj, indexes) {
+        var result = {},
+            att;
 
         // Don't waste time if tehre are no indexes to merge.
         if (indexes === undefined || !indexes.length) {
@@ -187,27 +249,27 @@
             if ( obj.hasOwnProperty(att) ) {
                 result[att] = getByIndexes(obj[att], indexes);
             }
-		}
-		return result;
-	}
+        }
+        return result;
+    }
 
     /**
      * Finds the longest length of any property in a column-data object.
      * @param {Object} obj
      * @returns {number}
      */
-	function objectLength (obj) {
-		var att, len = 0;
+    function objectLength (obj) {
+        var att, len = 0;
 
-		// Get the longest length of all properties
-		for (att in obj) {
-			if ( obj.hasOwnProperty(att) ) {
-				len = Math.max(len, obj[att].length);
-			}
-		}
+        // Get the longest length of all properties
+        for (att in obj) {
+            if ( obj.hasOwnProperty(att) ) {
+                len = Math.max(len, obj[att].length);
+            }
+        }
 
-		return len;
-	}
+        return len;
+    }
 
     /**
      * Rotates column-data to row-data and optionally adds it to an existing array.
@@ -216,42 +278,42 @@
      * @param {Boolean} [clearUndef]
      * @returns {Array}
      */
-	function objectRotate (obj, result, clearUndef) {
-		var att, i, resultIndex, len, resultOffset;
+    function objectRotate (obj, result, clearUndef) {
+        var att, i, resultIndex, len, resultOffset;
 
-		// Not an array? Send it back.
-		if ( typeof obj !== 'object' ) {
-			throw new TypeError("RC: Argument is not an object");
-		}
+        // Not an array? Send it back.
+        if ( typeof obj !== 'object' ) {
+            throw new TypeError("RC: Argument is not an object");
+        }
 
-		if ( result === undefined ) {
-			result = [];
-		} else if ( Opt.call(result) !== '[object Array]' ) {
-			throw new TypeError("RC: Result argument is not an array");
-		}
+        if ( result === undefined ) {
+            result = [];
+        } else if ( !isArray(result) ) {
+            throw new TypeError("RC: Result argument is not an array");
+        }
 
         // Get the existing result array length
         resultOffset = result.length;
 
-		len = objectLength(obj);
+        len = objectLength(obj);
 
-		for (i = 0; i < len; i++) {
+        for (i = 0; i < len; i++) {
             resultIndex = i + resultOffset;
-			if ( result[resultIndex] === undefined ) {
-				result[resultIndex] = {};
-			} else if ( typeof result[resultIndex] !== 'object' ) {
-				throw new TypeError("RC: Result contains incorrect type at index " + i);
-			}
+            if ( result[resultIndex] === undefined ) {
+                result[resultIndex] = {};
+            } else if ( typeof result[resultIndex] !== 'object' ) {
+                throw new TypeError("RC: Result contains incorrect type at index " + i);
+            }
 
-			for (att in obj) {
-				if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][i] !== undefined ) ) {
-					result[resultIndex][att] = obj[att][i];
-				}
-			}
-		}
+            for (att in obj) {
+                if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][i] !== undefined ) ) {
+                    result[resultIndex][att] = obj[att][i];
+                }
+            }
+        }
 
-		return result;
-	}
+        return result;
+    }
 
     /**
      * Create a
@@ -261,22 +323,22 @@
      * @param {Object} [result]
      * @returns {*}
      */
-	function objFromIndex (obj, index, clearUndef, result) {
-		var att;
+    function objFromIndex (obj, index, clearUndef, result) {
+        var att;
 
-		// Check for a passed result object, used by Proxy/objFromIndex
-		if ( result === undefined ) {
-			result = {};
-		}
+        // Check for a passed result object, used by Proxy/objFromIndex
+        if ( result === undefined ) {
+            result = {};
+        }
 
-		for ( att in obj ) {
-			if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][index] !== undefined ) ) {
-				result[att] = obj[att][index];
-			}
-		}
+        for ( att in obj ) {
+            if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][index] !== undefined ) ) {
+                result[att] = obj[att][index];
+            }
+        }
 
-		return result;
-	}
+        return result;
+    }
 
     /**
      * Create a proxy
@@ -284,25 +346,25 @@
      * @param index
      * @param clearUndef
      */
-	function proxyFromIndex (obj, index, clearUndef) {
-		return new Proxy(obj, index, clearUndef);
-	}
+    function proxyFromIndex (obj, index, clearUndef) {
+        return new Proxy(obj, index, clearUndef);
+    }
 
     /**
      * A generic rotate function that accepts row or column data to rotate.
      * @param {Object|Array} obj
      * @returns {Array|Object}
      */
-	function rotate(obj) {
-		// Generic, which directs to the appropriate array/object rotate
-		if (typeof obj !== 'object') throw new TypeError("RC: rotate requires an object or an array");
+    function rotate(obj) {
+        // Generic, which directs to the appropriate array/object rotate
+        if (typeof obj !== 'object') throw new TypeError("RC: rotate requires an object or an array");
 
-		if ( Opt.call(obj) === '[object Array]' ) {
-			return arrayRotate.apply(null, arguments);
-		} else {
-			return objectRotate.apply(null, arguments);
-		}
-	}
+        if ( isArray(obj) ) {
+            return arrayRotate.apply(null, arguments);
+        } else {
+            return objectRotate.apply(null, arguments);
+        }
+    }
 
     /**
      * Increment over column-data like it was array data, making a "read-only" object for each index.
@@ -310,51 +372,51 @@
      * @param {Object} obj
      * @param {Function} fn
      */
-	function readEach(obj, fn) {
-		var len = objectLength(obj),
-			i = 0;
+    function readEach(obj, fn) {
+        var len = objectLength(obj),
+            i = 0;
 
-		for (;i<len;i++) {
-			fn(objFromIndex(obj, i));
-		}
-	}
+        for (;i<len;i++) {
+            fn(objFromIndex(obj, i));
+        }
+    }
 
-	/**
+    /**
      * Increment over column-data like it was array data, making a proxy object for each index.
 	 * @param {Object} obj
      * @param {Function} fn
      */
-	function objEach(obj, fn) {
-		var len = objectLength(obj),
-			i = 0,
-			prox;
+    function objEach(obj, fn) {
+        var len = objectLength(obj),
+            i = 0,
+            prox;
 
-		for (;i<len;i++) {
-			prox = new Proxy(obj, i);
+        for (;i<len;i++) {
+            prox = new Proxy(obj, i);
 
-			fn(prox, i);
+            fn(prox, i);
 
-			prox.finalize();
-		}
-	}
+            prox.finalize();
+        }
+    }
 
 
-	/**
-	 * Create an object and add a .commit() prototype to place the values back into the original.
-	 * Useful for moving simple data types around. Objects and arrays will be automatically referenced.
-	 * @constructor
-	 * @param {Object} obj - A columnar object
-	 * @param {number} index - The index to convert into a row-based object
-	 * @param {Boolean} [clearUndef] - Clear undefined attributes when copying the object.
-	 * @example
-	 * var proxyRow = new Proxy(colData, index);
-	 */
-	var Proxy = (function() {
-		var __obj = [],
-			__idx = [],
-			__clr = [],
-			__this = [],
-			guid = 0;
+    /**
+     * Create an object and add a .commit() prototype to place the values back into the original.
+     * Useful for moving simple data types around. Objects and arrays will be automatically referenced.
+     * @constructor
+     * @param {Object} obj - A columnar object
+     * @param {number} index - The index to convert into a row-based object
+     * @param {Boolean} [clearUndef] - Clear undefined attributes when copying the object.
+     * @example
+     * var proxyRow = new Proxy(colData, index);
+     */
+    var Proxy = (function() {
+        var __obj = [],
+            __idx = [],
+            __clr = [],
+            __this = [],
+            guid = 0;
 
         /**
          * Uses a private array to locate the same object, so the proxy doesn't expose itself to modification.
@@ -363,23 +425,23 @@
          * @returns {number} The proxy ID to allow commit and destroy to locate the correct element
          * @private
          */
-		function __getId(proxy) {
-			var i = __this.length, pid;
+        function __getId(proxy) {
+            var i = __this.length, pid;
 
-			// Most likely to be at the end, so start there
-			for (;i;) {
-				i--;
-				if (__this[i] === proxy) {
-					pid = i;
-					break;
-				}
-			}
+            // Most likely to be at the end, so start there
+            for (;i;) {
+                i--;
+                if (__this[i] === proxy) {
+                    pid = i;
+                    break;
+                }
+            }
 
-			if (pid === undefined) {
-				throw new ReferenceError("Proxy is finalized and cannot be used again.");
-			}
-			return pid;
-		}
+            if (pid === undefined) {
+                throw new ReferenceError("Proxy is finalized and cannot be used again.");
+            }
+            return pid;
+        }
 
         /**
          * The actual Proxy constructor.
@@ -388,50 +450,50 @@
          * @param {Boolean} [clearUndef]
          * @constructor
          */
-		function Proxy (obj, index, clearUndef) {
+        function Proxy (obj, index, clearUndef) {
 
-			// Increment the guid
-			++guid;
+            // Increment the guid
+            ++guid;
 
-			// Set the private data.
-			__obj[guid] = obj;
-			__idx[guid] = index;
-			__clr[guid] = clearUndef;
-			__this[guid] = this;
+            // Set the private data.
+            __obj[guid] = obj;
+            __idx[guid] = index;
+            __clr[guid] = clearUndef;
+            __this[guid] = this;
 
-			// Call reusable code for objFromIndex
-			objFromIndex(obj, index, clearUndef, this);
-		}
+            // Call reusable code for objFromIndex
+            objFromIndex(obj, index, clearUndef, this);
+        }
 
-		// Defined inside the constructor to give it access to the originating object and parameters
+        // Defined inside the constructor to give it access to the originating object and parameters
 
         /**
          * Commits the changes from the proxy to the original.
          */
-		Proxy.prototype.commit = function(){
-			var pid = __getId(this),
-				obj = __obj[pid],
-				index = __idx[pid],
-				clearUndef = __clr[pid],
-				att;
+        Proxy.prototype.commit = function(){
+            var pid = __getId(this),
+                obj = __obj[pid],
+                index = __idx[pid],
+                clearUndef = __clr[pid],
+                att;
 
-			for ( att in this ) {
-				if ( att !== '__rcProxyId' && this.hasOwnProperty(att) && ( !clearUndef || this[att] !== undefined ) ) {
-					obj[att][index] = this[att];
-				}
-			}
-		};
+            for ( att in this ) {
+                if ( att !== '__rcProxyId' && this.hasOwnProperty(att) && ( !clearUndef || this[att] !== undefined ) ) {
+                    obj[att][index] = this[att];
+                }
+            }
+        };
 
         /**
          * Removes the proxy to prevent memory leaks
          */
-		Proxy.prototype.destroy = function() {
-			var pid = __getId(this);
-			delete __this[pid];
-			delete __obj[pid];
-			delete __idx[pid];
-			delete __clr[pid];
-		};
+        Proxy.prototype.destroy = function() {
+            var pid = __getId(this);
+            delete __this[pid];
+            delete __obj[pid];
+            delete __idx[pid];
+            delete __clr[pid];
+        };
 
         /**
          * Commit and destroy the proxy, as a single step
@@ -443,7 +505,6 @@
 
 		return Proxy;
 	}());
-
 
 	/*--------------------------------------------------------------------------*/
 
@@ -500,4 +561,4 @@
 	  root.rowcol = rowcol;
 	}
 
-}.call(this));
+}());
