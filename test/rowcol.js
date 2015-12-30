@@ -1,6 +1,7 @@
 var assert = require("assert");
 var rowcol = require("../rowcol");
 
+
 var rowData = [
 	{ id: 1, name: "A", approved: true},
 	{ id: 2, name: "B", approved: true},
@@ -21,6 +22,10 @@ describe('rowcol', function(){
         describe('#objLength', function(){
             it('should return the number of array entries of the first key', function(){
                 assert.equal(rowcol.object.objLength(colData), 3);
+            });
+
+            it('should return zero for an empty object', function(){
+                assert.equal(rowcol.object.objLength(Object.create(null)), 0);
             });
         });
 
@@ -49,13 +54,31 @@ describe('rowcol', function(){
             });
 
 
-            it('should not care about existing result types', function(){
+            it('should accept only array and undefined as results', function(){
 
                 assert.doesNotThrow(function() {
                     final = rowcol.object.rotate(colData, [1,2,3]);
                 });
 
                 assert.equal(final.length, 6);
+
+                assert.doesNotThrow(function() {
+                    final = rowcol.object.rotate(colData, undefined);
+                });
+            });
+
+            it('should throw if not an object', function(){
+
+                assert.throws(function() {
+                    rowcol.object.rotate("string");
+                });
+            });
+
+            it('should throw if not an result is the wrong type', function(){
+
+                assert.throws(function() {
+                    final = rowcol.object.rotate(colData, "string");
+                });
             });
         });
 
@@ -139,8 +162,6 @@ describe('rowcol', function(){
         /* readEach Tests */
         describe('#readEach', function() {
 
-
-
             var eachLen = 0;
 
             rowcol.object.readEach(colData, function (obj, idx) {
@@ -211,6 +232,20 @@ describe('rowcol', function(){
                 assert.equal(resultObject.name, true);
                 assert.equal(typeof resultObject.name, 'boolean');
             });
+
+            it('should throw an exception if it does not receive an array', function(){
+
+                assert.throws(function() {
+                    rowcol.array.rotate(colData, {name: true, approved: []}, true);
+                });
+            });
+
+            it('should throw if no result object with limited', function(){
+
+                assert.throws(function() {
+                    rowcol.array.rotate(rowData, undefined, true);
+                });
+            });
         });
     });
 
@@ -219,6 +254,13 @@ describe('rowcol', function(){
         it('should rotate like the explicit object.rotate and array.rotate', function(){
             assert.equal(JSON.stringify(rowcol.rotate(rowData)), colString, "row->col rotation - generic");
             assert.equal(JSON.stringify(rowcol.rotate(colData)), rowString, "col->row rotation - generic");
+        });
+
+        it('should throw with a bad data type', function(){
+
+            assert.throws(function() {
+                rowcol.rotate("string");
+            });
         });
     });
 
@@ -248,6 +290,33 @@ describe('rowcol', function(){
 
         it('should not permit changes after finalize',function(){
             assert.throws(function(){ prox.commit(); }, ReferenceError);
+        });
+
+    });
+
+    describe('#rotate', function(){
+
+    });
+
+    describe('test coverage', function(){
+
+        describe('#isArray', function(){
+
+            it('should recognize a valid array', function() {
+                assert.equal(rowcol.test.isArray([]), true);
+                assert.equal(rowcol.test.isArray([1, 2, 3]), true);
+                assert.equal(rowcol.test.isArray(JSON.parse('["a","b","c"]')), true);
+                assert.equal(rowcol.test.isArray(JSON.parse('["a","b","c"]')), true);
+            });
+
+            it('should reject non-array types', function() {
+                assert.equal(rowcol.test.isArray(true), false);
+                assert.equal(rowcol.test.isArray(false), false);
+                assert.equal(rowcol.test.isArray(''), false);
+                assert.equal(rowcol.test.isArray(0), false);
+                assert.equal(rowcol.test.isArray({0: true, 1: false, length: 2}), false);
+            });
+
         });
 
     });

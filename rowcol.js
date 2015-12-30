@@ -14,7 +14,7 @@
      * Structure and code from Lo-Dash 2.4.1 <http://lodash.com/>
      */
 
-    var version = "0.2.4";
+    var version = "0.2.5";
 
     /** Used to determine if values are of the language type Object */
     var objectTypes = {
@@ -129,7 +129,7 @@
      * Performs the rotation for a limited (partial) rotation
      * @param {Array} arr
      * @param {Object} result
-     * @param {Array|Boolean} limited
+     * @param {Array|boolean} limited
      * @returns {Object}
      */
     function arrayRotateLimited (arr, result, limited) {
@@ -138,7 +138,6 @@
         // Is limited the list of keys?
         if (isArray(limited)) {
             objKeys = limited;
-            limited = true;
         } else {
             // Get the keys for limited rotate
             objKeys = Object.keys(result);
@@ -299,11 +298,15 @@
 
         for (i = 0; i < len; i++) {
             resultIndex = i + resultOffset;
+            result[resultIndex] = {};
+
+            /** Because of resultOffset, there is no way for the error condition to execute
             if ( result[resultIndex] === undefined ) {
                 result[resultIndex] = {};
             } else if ( typeof result[resultIndex] !== 'object' ) {
                 throw new TypeError("RC: Result contains incorrect type at index " + i);
             }
+             **/
 
             for (att in obj) {
                 if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][i] !== undefined ) ) {
@@ -527,7 +530,10 @@
 			each: objEach,
 			objLength: objectLength
 		},
-		VERSION: version
+		VERSION: version,
+        test: {
+            isArray: isArray
+        }
 	};
 
 	/*--------------------------------------------------------------------------*/
