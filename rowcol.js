@@ -40,6 +40,7 @@
     /** Detect the popular CommonJS extension `module.exports` */
     var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
 
+
     /*--------------------------------------------------------------------------*/
 
 
@@ -61,27 +62,26 @@
      * @param {Function|String} filter Function or String to match array values.
      * @returns {Array} Array of indexes that match the filter.
      */
-    function getIndexes (array, filter) {
-        var indexes = [],
-            len = array.length,
-            isFn = (typeof filter === 'function'),
-            i;
+	function getIndexes (array, filter) {
+		var indexes = [],
+			len = array.length,
+			i;
 
-        if (isFn) {
-            for (i = 0; i < len; i++) {
-                if ( filter(i, array[i]) ) {
-                    indexes.push(i);
-                }
-            }
-        } else {
-            for (i = 0; i < len; i++) {
-                if ( array[i] === filter ) {
-                    indexes.push(i);
-                }
-            }
-        }
-        return indexes;
-    }
+		if (typeof filter === 'function') {
+			for (i = 0; i < len; i++) {
+				if ( filter(i, array[i]) ) {
+					indexes.push(i);
+				}
+			}
+		} else {
+			for (i = 0; i < len; i++) {
+				if ( array[i] === filter ) {
+					indexes.push(i);
+				}
+			}
+		}
+		return indexes;
+	}
 
     /**
      * Returns the elements of an array using a list of selected indexes.
@@ -175,7 +175,7 @@
      * Rotate an array of row-data into a column-data object
      * @param {Array} arr
      * @param {Object} [result] Result object to use
-     * @param {Boolean} [limited] Only update keys passed on the result object, allowing a limited rotation
+     * @param {boolean} [limited] Only update keys passed on the result object, allowing a limited rotation
      * @returns {Object}
      */
     function arrayRotate (arr, result, limited) {
@@ -370,7 +370,7 @@
      * Increment over column-data like it was array data, making a "read-only" object for each index.
      * Does not prevent modification of values with complex data types (objects, arrays).
      * @param {Object} obj
-     * @param {function} fn
+     * @param {Function} fn
      */
     function readEach(obj, fn) {
         var len = objectLength(obj),
@@ -383,8 +383,8 @@
 
     /**
      * Increment over column-data like it was array data, making a proxy object for each index.
-     * @param {Object} obj
-     * @param {function} fn
+	 * @param {Object} obj
+     * @param {Function} fn
      */
     function objEach(obj, fn) {
         var len = objectLength(obj),
@@ -506,60 +506,59 @@
         return Proxy;
     })();
 
+	/*--------------------------------------------------------------------------*/
 
-    /*--------------------------------------------------------------------------*/
+	var rowcol = {
+		rotate: rotate,
+		proxy: proxyFromIndex,
+		array: {
+			getIndexes: getIndexes,
+			getByIndexes: getByIndexes,
+			rotate: arrayRotate
+		},
+		object: {
+			filter: objectFilter,
+			filterIndexes: filterIndexes,
+			filterMerge: filterMerge,
+			rotate: objectRotate,
+			objFromIndex: objFromIndex,
+			proxy: proxyFromIndex,
+			readEach: readEach,
+			each: objEach,
+			objLength: objectLength
+		},
+		VERSION: version
+	};
 
-    var rowcol = {
-        rotate: rotate,
-        proxy: proxyFromIndex,
-        array: {
-            getIndexes: getIndexes,
-            getByIndexes: getByIndexes,
-            rotate: arrayRotate
-        },
-        object: {
-            filter: objectFilter,
-            filterIndexes: filterIndexes,
-            filterMerge: filterMerge,
-            rotate: objectRotate,
-            objFromIndex: objFromIndex,
-            proxy: proxyFromIndex,
-            readEach: readEach,
-            each: objEach,
-            objLength: objectLength
-        },
-        VERSION: version
-    };
+	/*--------------------------------------------------------------------------*/
 
-    /*--------------------------------------------------------------------------*/
+	// some AMD build optimizers like r.js check for condition patterns like the following:
+	if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
+	  // Expose to the global object even when an AMD loader is present in
+	  // case RowCol is loaded with a RequireJS shim config.
+	  // See http://requirejs.org/docs/api.html#config-shim
+	  root.rowcol = rowcol;
 
-    // some AMD build optimizers like r.js check for condition patterns like the following:
-    if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
-        // Expose to the global object even when an AMD loader is present in
-        // case RowCol is loaded with a RequireJS shim config.
-        // See http://requirejs.org/docs/api.html#config-shim
-        root.rowcol = rowcol;
+	  // define as an anonymous module so, through path mapping, it can be
+	  // referenced as the "underscore" module
+	  define(function() {
+		return rowcol;
+	  });
+	}
+	// check for `exports` after `define` in case a build optimizer adds an `exports` object
+	else if (freeExports && freeModule) {
+	  // in Node.js or RingoJS
+	  if (moduleExports) {
+		(freeModule.exports = rowcol).rowcol = rowcol;
+	  }
+	  // in Narwhal or Rhino -require
+	  else {
+		freeExports.rowcol = rowcol;
+	  }
+	}
+	else {
+	  // in a browser or Rhino
+	  root.rowcol = rowcol;
+	}
 
-        // define as an anonymous module so, through path mapping, it can be
-        // referenced as the "underscore" module
-        define(function() {
-            return rowcol;
-        });
-    }
-    // check for `exports` after `define` in case a build optimizer adds an `exports` object
-    else if (freeExports && freeModule) {
-        // in Node.js or RingoJS
-        if (moduleExports) {
-            (freeModule.exports = rowcol).rowcol = rowcol;
-        }
-        // in Narwhal or Rhino -require
-        else {
-            freeExports.rowcol = rowcol;
-        }
-    }
-    else {
-        // in a browser or Rhino
-        root.rowcol = rowcol;
-    }
-
-}.call(this));
+}());
