@@ -56,10 +56,9 @@
 	function getIndexes (array, filter) {
 		var indexes = [],
 			len = array.length,
-			isFn = (typeof filter === 'function'),
 			i;
 
-		if (isFn) {
+		if (typeof filter === 'function') {
 			for (i = 0; i < len; i++) {
 				if ( filter(i, array[i]) ) {
 					indexes.push(i);
@@ -95,8 +94,8 @@
      * Rotate an array of row-data into a column-data object
      * @param {Array} arr
      * @param {Object} [result] Result object to use
-     * @param {Boolean} [limited] Only update keys passed on the result object, allowing a limited rotation
-     * @param {Boolean} [softFail]
+     * @param {boolean} [limited] Only update keys passed on the result object, allowing a limited rotation
+     * @param {boolean} [softFail]
      * @returns {Object}
      */
 	function arrayRotate (arr, result, limited, softFail) {
@@ -309,7 +308,7 @@
      * Increment over column-data like it was array data, making a "read-only" object for each index.
      * Does not prevent modification of values with complex data types (objects, arrays).
      * @param {Object} obj
-     * @param {function} fn
+     * @param {Function} fn
      */
 	function readEach(obj, fn) {
 		var len = objectLength(obj),
@@ -323,7 +322,7 @@
 	/**
      * Increment over column-data like it was array data, making a proxy object for each index.
 	 * @param {Object} obj
-     * @param {function} fn
+     * @param {Function} fn
      */
 	function objEach(obj, fn) {
 		var len = objectLength(obj),
