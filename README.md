@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/oculus42/rc.js.svg?branch=master)](https://travis-ci.org/oculus42/rc.js)
+[![Code Climate](https://codeclimate.com/github/oculus42/rc.js/badges/gpa.svg)](https://codeclimate.com/github/oculus42/rc.js)
+[![Test Coverage](https://codeclimate.com/github/oculus42/rc.js/badges/coverage.svg)](https://codeclimate.com/github/oculus42/rc.js/coverage)
 
 rowcol.js - Row/Column Data Manipulation
 =====
