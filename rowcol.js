@@ -31,11 +31,11 @@
     /** Detect free variable `module` */
     var freeModule = objectTypes[typeof module] && module && !module.nodeType && module;
 
-	/** Detect free variable `global` from Node.js or Browserified code and use it as `root` */
-	var freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
-	if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal)) {
-		root = freeGlobal;
-	}
+    /** Detect free variable `global` from Node.js or Browserified code and use it as `root` */
+    var freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
+    if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal)) {
+        root = freeGlobal;
+    }
 
     /** Detect the popular CommonJS extension `module.exports` */
     var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
@@ -62,26 +62,26 @@
      * @param {Function|String} filter Function or String to match array values.
      * @returns {Array} Array of indexes that match the filter.
      */
-	function getIndexes (array, filter) {
-		var indexes = [],
-			len = array.length,
-			i;
+    function getIndexes (array, filter) {
+        var indexes = [],
+            len = array.length,
+            i;
 
-		if (typeof filter === 'function') {
-			for (i = 0; i < len; i++) {
-				if ( filter(i, array[i]) ) {
-					indexes.push(i);
-				}
-			}
-		} else {
-			for (i = 0; i < len; i++) {
-				if ( array[i] === filter ) {
-					indexes.push(i);
-				}
-			}
-		}
-		return indexes;
-	}
+        if (typeof filter === 'function') {
+            for (i = 0; i < len; i++) {
+                if ( filter(i, array[i]) ) {
+                    indexes.push(i);
+                }
+            }
+        } else {
+            for (i = 0; i < len; i++) {
+                if ( array[i] === filter ) {
+                    indexes.push(i);
+                }
+            }
+        }
+        return indexes;
+    }
 
     /**
      * Returns the elements of an array using a list of selected indexes.
@@ -352,7 +352,7 @@
      * @param clearUndef
      */
     function proxyFromIndex (obj, index, clearUndef) {
-        return new Proxy(obj, index, clearUndef);
+        return new RCProxy(obj, index, clearUndef);
     }
 
     /**
@@ -388,7 +388,7 @@
 
     /**
      * Increment over column-data like it was array data, making a proxy object for each index.
-	 * @param {Object} obj
+     * @param {Object} obj
      * @param {Function} fn
      */
     function objEach(obj, fn) {
@@ -397,7 +397,7 @@
             prox;
 
         for (;i<len;i++) {
-            prox = new Proxy(obj, i);
+            prox = new RCProxy(obj, i);
 
             fn(prox, i);
 
@@ -414,9 +414,9 @@
      * @param {number} index - The index to convert into a row-based object
      * @param {Boolean} [clearUndef] - Clear undefined attributes when copying the object.
      * @example
-     * var proxyRow = new Proxy(colData, index);
+     * var proxyRow = new RCProxy(colData, index);
      */
-    var Proxy = (function() {
+    var RCProxy = (function() {
         var __obj = [],
             __idx = [],
             __clr = [],
@@ -425,8 +425,8 @@
 
         /**
          * Uses a private array to locate the same object, so the proxy doesn't expose itself to modification.
-         * We compare the passed object against an array of existing Proxy objects; basically pointer comparison.
-         * @param {Proxy} proxy
+         * We compare the passed object against an array of existing RCProxy objects; basically pointer comparison.
+         * @param {RCProxy} proxy
          * @returns {number} The proxy ID to allow commit and destroy to locate the correct element
          * @private
          */
@@ -449,13 +449,13 @@
         }
 
         /**
-         * The actual Proxy constructor.
+         * The actual RCProxy constructor.
          * @param {Object} obj
          * @param {number} index
          * @param {Boolean} [clearUndef]
          * @constructor
          */
-        function Proxy (obj, index, clearUndef) {
+        function RCProxy (obj, index, clearUndef) {
 
             // Increment the guid
             ++guid;
@@ -475,7 +475,7 @@
         /**
          * Commits the changes from the proxy to the original.
          */
-        Proxy.prototype.commit = function(){
+        RCProxy.prototype.commit = function(){
             var pid = __getId(this),
                 obj = __obj[pid],
                 index = __idx[pid],
@@ -492,7 +492,7 @@
         /**
          * Removes the proxy to prevent memory leaks
          */
-        Proxy.prototype.destroy = function() {
+        RCProxy.prototype.destroy = function() {
             var pid = __getId(this);
             delete __this[pid];
             delete __obj[pid];
@@ -503,70 +503,69 @@
         /**
          * Commit and destroy the proxy, as a single step
          */
-		Proxy.prototype.finalize = function() {
-			this.commit();
-			this.destroy();
-		};
+        RCProxy.prototype.finalize = function() {
+            this.commit();
+            this.destroy();
+        };
 
-		return Proxy;
-	}());
+        return RCProxy;
+    }());
 
-	/*--------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------*/
 
-	var rowcol = {
-		rotate: rotate,
-		proxy: proxyFromIndex,
-		array: {
-			getIndexes: getIndexes,
-			getByIndexes: getByIndexes,
-			rotate: arrayRotate
-		},
-		object: {
-			filter: objectFilter,
-			filterIndexes: filterIndexes,
-			filterMerge: filterMerge,
-			rotate: objectRotate,
-			objFromIndex: objFromIndex,
-			proxy: proxyFromIndex,
-			readEach: readEach,
-			each: objEach,
-			objLength: objectLength
-		},
-		VERSION: version,
+    var rowcol = {
+        rotate: rotate,
+        proxy: proxyFromIndex,
+        array: {
+            getIndexes: getIndexes,
+            getByIndexes: getByIndexes,
+            rotate: arrayRotate
+        },
+        object: {
+            filter: objectFilter,
+            filterIndexes: filterIndexes,
+            filterMerge: filterMerge,
+            rotate: objectRotate,
+            objFromIndex: objFromIndex,
+            proxy: proxyFromIndex,
+            readEach: readEach,
+            each: objEach,
+            objLength: objectLength
+        },
+        VERSION: version,
         test: {
             isArray: isArray
         }
-	};
+    };
 
-	/*--------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------*/
 
-	// some AMD build optimizers like r.js check for condition patterns like the following:
-	if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
-	  // Expose to the global object even when an AMD loader is present in
-	  // case RowCol is loaded with a RequireJS shim config.
-	  // See http://requirejs.org/docs/api.html#config-shim
-	  root.rowcol = rowcol;
+    // some AMD build optimizers like r.js check for condition patterns like the following:
+    if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
+        // Expose to the global object even when an AMD loader is present in
+        // case RowCol is loaded with a RequireJS shim config.
+            // See http://requirejs.org/docs/api.html#config-shim
+        root.rowcol = rowcol;
 
-	  // define as an anonymous module so, through path mapping, it can be
-	  // referenced as the "underscore" module
-	  define(function() {
-		return rowcol;
-	  });
-	}
-	// check for `exports` after `define` in case a build optimizer adds an `exports` object
-	else if (freeExports && freeModule) {
-	  // in Node.js or RingoJS
-	  if (moduleExports) {
-		(freeModule.exports = rowcol).rowcol = rowcol;
-	  }
-	  // in Narwhal or Rhino -require
-	  else {
-		freeExports.rowcol = rowcol;
-	  }
-	}
-	else {
-	  // in a browser or Rhino
-	  root.rowcol = rowcol;
-	}
-
+        // define as an anonymous module so, through path mapping, it can be
+                // referenced as the "underscore" module
+        define(function() {
+            return rowcol;
+        });
+    }
+    // check for `exports` after `define` in case a build optimizer adds an `exports` object
+    else if (freeExports && freeModule) {
+        // in Node.js or RingoJS
+        if (moduleExports) {
+            (freeModule.exports = rowcol).rowcol = rowcol;
+        }
+        // in Narwhal or Rhino -require
+        else {
+            freeExports.rowcol = rowcol;
+        }
+    }
+    else {
+        // in a browser or Rhino
+        root.rowcol = rowcol;
+    }
 }());
