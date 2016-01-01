@@ -3,9 +3,9 @@ var rowcol = require("../rowcol");
 
 
 var rowData = [
-	{ id: 1, name: "A", approved: true},
-	{ id: 2, name: "B", approved: true},
-	{ id: 3, name: "C", approved: false}
+    { id: 1, name: "A", approved: true},
+    { id: 2, name: "B", approved: true},
+    { id: 3, name: "C", approved: false}
 ],
 	colData = {
 		id: [1,2,3],
@@ -83,6 +83,31 @@ describe('rowcol', function(){
         });
 
         /* Filters */
+        describe('#filter', function(){
+
+            var aResult = '{"id":[1],"name":["A"],"approved":[true]}';
+
+            it('should accept a string value', function(){
+                var filtTest = rowcol.object.filter(colData, 'name', 'A');
+                assert.equal(JSON.stringify(filtTest), aResult);
+            });
+
+            it('should accept a Boolean value', function(){
+                var filtTest = rowcol.object.filter(colData, 'approved', true);
+                assert.equal(filtTest.name.length, 2);
+            });
+
+            it('should accept a filter function', function(){
+                var filtTest = rowcol.object.filter(colData, 'name', function(idx, val){ return val === 'A'; });
+                assert.equal(JSON.stringify(filtTest), aResult);
+            });
+
+            it('should return an empty object no matches', function(){
+                var filtTest = rowcol.object.filter(colData, "name", "Q");
+                assert.equal(JSON.stringify(filtTest), '{}');
+            });
+        });
+
         describe('#filterIndexes', function(){
 
             it('should filter Boolean values', function(){
@@ -103,8 +128,7 @@ describe('rowcol', function(){
             it('should return an empty array for no matches', function(){
                 var filtTest = rowcol.object.filterIndexes(colData, "name", "Q");
                 assert.equal(filtTest.length, 0);
-            })
-
+            });
         });
 
         describe('#filterMerge', function(){
@@ -220,9 +244,12 @@ describe('rowcol', function(){
 
             it('should perform a limited rotate', function(){
                 var limitedObj = rowcol.array.rotate(rowData, {name: [], approved: []}, true);
-                assert.equal(limitedObj.id, undefined);
-            });
+                var limitedObj2 = rowcol.array.rotate(rowData, {},['name','approved']);
 
+                assert.equal(limitedObj.id, undefined);
+                assert.equal(limitedObj2.id, undefined);
+                assert.equal(limitedObj.toString(), limitedObj2.toString());
+            });
 
             it('should not overwrite existing properties of a passed value', function(){
 
@@ -318,6 +345,6 @@ describe('rowcol', function(){
             });
 
         });
-
     });
+
 });
