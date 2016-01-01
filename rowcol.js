@@ -90,11 +90,12 @@
      * @returns {Array}
      */
     function getByIndexes (array, indexes) {
-        var len = indexes.length,
+        var i,
+            len = indexes.length,
             data = [];
 
-        for (;len;) {
-            data[len] = array[indexes[--len]];
+        for (i = 0; i < len; i++) {
+            data.push(array[indexes[i]]);
         }
         return data;
     }
