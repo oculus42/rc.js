@@ -147,8 +147,9 @@
         keyLen = objKeys.length;
 
         // One pass to create any missing arrays
-        for (att in objKeys) {
-            if (!isArray(result[att])) {
+        for (i=0;i<keyLen;i++) {
+            att = objKeys[i];
+            if (!result[att]) {
                 result[att] = [];
             }
         }
