@@ -1,19 +1,21 @@
 {
   "name": "rowcol",
-  "version": "0.2.4",
+  "version": "1.0.0",
   "description": "A library for row-column data manipulation.",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "cover": "grunt cover"
   },
   "author": "Samuel Rouse <samuel.rouse@gmail.com> (http://samuelrouse.com)",
   "license": "MIT",
   "bugs": "https://github.com/oculus42/rc.js/issues",
   "repository": "oculus42/rc.js",
-  "engines": [
-    "node",
-    "rhino"
-  ],
+  "engines": {
+    "node": ">0.10.0",
+    "iojs": ">1.0.0",
+    "rhino": ">1.7"
+  },
   "devDependencies": {
     "codeclimate-test-reporter": "^0.1.1",
     "grunt": "^0.4.1",
