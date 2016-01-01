@@ -14,7 +14,7 @@
      * Structure and code from Lo-Dash 2.4.1 <http://lodash.com/>
      */
 
-    var version = "0.2.6";
+    var version = "1.0.0";
 
     /** Used to determine if values are of the language type Object */
     var objectTypes = {
