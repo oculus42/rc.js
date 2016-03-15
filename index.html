@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Rowcol by oculus42</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Rowcol</h1>
+        <p>Row/Column Data Manipulation</p>
+
+        <p class="view"><a href="https://github.com/oculus42/rc.js">View the Project on GitHub <small>oculus42/rc.js</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/oculus42/rc.js/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/oculus42/rc.js/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/oculus42/rc.js">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p><a href="https://travis-ci.org/oculus42/rc.js"><img src="https://travis-ci.org/oculus42/rc.js.svg?branch=master" alt="Build Status"></a>
+<a href="https://codeclimate.com/github/oculus42/rc.js"><img src="https://codeclimate.com/github/oculus42/rc.js/badges/gpa.svg" alt="Code Climate"></a>
+<a href="https://codeclimate.com/github/oculus42/rc.js/coverage"><img src="https://codeclimate.com/github/oculus42/rc.js/badges/coverage.svg" alt="Test Coverage"></a></p>
+
+<h1>
+<a id="rowcoljs---rowcolumn-data-manipulation" class="anchor" href="#rowcoljs---rowcolumn-data-manipulation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>rowcol.js - Row/Column Data Manipulation</h1>
+
+<p>While JSON arrays of objects are very familiar for representing collections of data and map nicely to row-based storage in databases, they are inefficient for transmission, storage, and filtering. "Rows" are good for interacting with a specific record, but not for <em>finding</em> that record.</p>
+
+<p><strong>rowcol.js</strong> provides tools for converting between rows and columns and interacting with columnar data.</p>
+
+<h2>
+<a id="performance-comparisons" class="anchor" href="#performance-comparisons" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Performance Comparisons</h2>
+
+<ul>
+<li> <a href="http://jsperf.com/rc-simple/5">Single Column Filter</a> — For simple single-column comparisons, rowcol was 40-400% faster. With time, this performance has changed. As of December 27, 2015, rowcol is now slower in Chrome and Firefox, while Safari is faster.</li>
+<li> <a href="http://jsperf.com/rc-equiv/7">Simple Equivalence Filter</a> — Simple equivalence is an order of magnitude faster than native row filtering, except, strangely, in Firefox (as of December 27, 2015).</li>
+<li> More to come.</li>
+</ul>
+
+<h2>
+<a id="problems-with-rows" class="anchor" href="#problems-with-rows" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Problems with Rows</h2>
+
+<ul>
+<li> Each JSON row includes a header (the key in a key-value pair) for each record. For heterogeneous data, rearranging this into columns removes the weight of the header during transmission. Rows with optional keys add <code>undefined</code> values, but may still be smaller depending on column counts and names.</li>
+<li> Many data filters are applied to columns (<code>price &gt; 50.00</code> or <code>active == true</code>), requiring incrementing across all objects even though you only want one particular attribute.</li>
+</ul>
+
+<h2>
+<a id="benefits-of-columns" class="anchor" href="#benefits-of-columns" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Benefits of Columns</h2>
+
+<ul>
+<li> Heterogeneous data is transmitted in a more compact format. Two real-world test objects with complex, multi-level data saw substantial reductions (row/column rotation was performed on multiple levels):
+
+<ul>
+<li> 10936 became 7117 characters for a ~35% reduction.</li>
+<li> 123903 became 90892 characters for a ~27% reduction.</li>
+<li> TODO: Synthetic tests and JSPerf examples.</li>
+</ul>
+</li>
+<li> Filters return arrays of indexes for easy set manipulation (union, intersection, difference). In fairness you could do this with rows, but it is a requirement of column-oriented filtering</li>
+<li> Some column filters can be performed with simple comparisons: no filter function overhead.</li>
+</ul>
+
+<h2>
+<a id="problems-with-columns" class="anchor" href="#problems-with-columns" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Problems with Columns</h2>
+
+<ul>
+<li> There is no native column-based filtering.</li>
+<li> Columns are inconvenient for interacting with a single record (row).</li>
+<li> Lack of 3rd-party library support for columns.</li>
+</ul>
+
+<h2>
+<a id="rowcol-solutions" class="anchor" href="#rowcol-solutions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>RowCol Solutions</h2>
+
+<h3>
+<a id="filter" class="anchor" href="#filter" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Filter</h3>
+
+<p>The simple column-based filter supports strict comparison intended for primitive types or a filter function. For all filter actions, the original object is not modified, but complex data types are referenced. Filters are broken into three functions:</p>
+
+<ul>
+<li> <code>rowcol.object.filter(obj, field, filter)</code> - Basic filter action returns a result set based on a field name and a filter.</li>
+<li> <code>rowcol.object.filterIndexes(obj, field, filter)</code> - Takes the same arguments as <code>rowcol.object.filter</code> but returns the indexes of the filter action. This is useful for more complex set manipulation.</li>
+<li> <code>rowcol.object.filterMerge(obj, indexes)</code> - Allows a filter action with an external source of indexes.</li>
+</ul>
+
+<h3>
+<a id="proxy" class="anchor" href="#proxy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Proxy</h3>
+
+<p>Extracting a row for viewing and interaction is convenient, but changes to primitive types on the "view" object will not be reflected on the original column-based store. <strong>Proxy</strong> objects add <code>.commit()</code> and <code>.finalize()</code> to update the source columns and keep your data consistent. Proxy stores copies and/or references of the information passed when a proxy is created, so you must use the <code>.destroy()</code> or <code>.finalize()</code> method to avoid memory leaks.</p>
+
+<h3>
+<a id="rotate" class="anchor" href="#rotate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Rotate</h3>
+
+<p>RowCol provides <code>rowcol.rotate</code> to convert arrays of objects (rows) and objects of arrays (columns) back and forth. This allows the compact transmission of columns while existing row-based code. Performance testing is recommended if you are rotating large datasets.</p>
+
+<h3>
+<a id="rc-chaining" class="anchor" href="#rc-chaining" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>RC Chaining</h3>
+
+<p>An object can be made into an <code>RC</code> object to support chaining of the following methods:</p>
+
+<ul>
+<li> <code>filter</code> - Calls <code>rowcol.object.filter</code> and provides the result in an RC object for continued chaining.</li>
+<li> <code>proxy</code> - Calls <code>rowcol.object.proxy</code> and returns a Proxy object. Ends the chain.</li>
+<li> <code>rotate</code> - Call <code>rowcol.object.rotate</code>, converting a column-based object of arrays into a row-based array of objects. Ends the chain.</li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/oculus42">oculus42</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
