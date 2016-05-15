@@ -22,6 +22,7 @@
         'object': true
     };
 
+    /* istanbul ignore next UMD code */
     /** Used as a reference to the global object */
     var root = (objectTypes[typeof window] && window) || this;
 
@@ -33,6 +34,7 @@
 
     /** Detect free variable `global` from Node.js or Browserified code and use it as `root` */
     var freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
+    /* istanbul ignore next UMD code */
     if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal)) {
         root = freeGlobal;
     }
@@ -540,6 +542,7 @@
 
     /*--------------------------------------------------------------------------*/
 
+    /* istanbul ignore next UMD */
     // some AMD build optimizers like r.js check for condition patterns like the following:
     if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
         // Expose to the global object even when an AMD loader is present in
