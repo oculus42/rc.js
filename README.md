@@ -25,7 +25,7 @@ Benefits of Columns
 *  Heterogeneous data is transmitted in a more compact format. Two real-world test objects with complex, multi-level data saw substantial reductions (row/column rotation was performed on multiple levels):
   *  10936 became 7117 characters for a ~35% reduction.
   *  123903 became 90892 characters for a ~27% reduction.
-  *  TODO: Synthetic tests with looping and rotation performance examples.
+  *  Need to add Synthetic tests with looping and rotation performance examples.
 *  Filters return arrays of indexes for easy set manipulation (union, intersection, difference). In fairness you could do this with rows, but it is a requirement of column-oriented filtering
 *  Some column filters can be performed with simple comparisons: no filter function overhead.
 
