@@ -282,27 +282,28 @@
      * @returns {Array}
      */
     function objectRotate (obj, result, clearUndef) {
-        var att, i, resultIndex, len, resultOffset;
+        var att, i, resultIndex, len, resultOffset, output;
 
         // Not an array? Send it back.
         if ( typeof obj !== 'object' ) {
             throw new TypeError("RC: Argument is not an object");
         }
 
-        if ( result === undefined ) {
-            result = [];
-        } else if ( !isArray(result) ) {
+        // Don't replace parameters to avoid optimization issues.
+        output = result || [];
+
+        if ( !isArray(output) ) {
             throw new TypeError("RC: Result argument is not an array");
         }
 
         // Get the existing result array length
-        resultOffset = result.length;
+        resultOffset = output.length;
 
         len = objectLength(obj);
 
         for (i = 0; i < len; i++) {
             resultIndex = i + resultOffset;
-            result[resultIndex] = {};
+            output[resultIndex] = {};
 
             /** Because of resultOffset, there is no way for the error condition to execute
             if ( result[resultIndex] === undefined ) {
@@ -314,12 +315,12 @@
 
             for (att in obj) {
                 if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][i] !== undefined ) ) {
-                    result[resultIndex][att] = obj[att][i];
+                    output[resultIndex][att] = obj[att][i];
                 }
             }
         }
 
-        return result;
+        return output;
     }
 
     /**
