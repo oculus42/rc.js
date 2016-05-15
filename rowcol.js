@@ -14,7 +14,7 @@
      * Structure and code from Lo-Dash 2.4.1 <http://lodash.com/>
      */
 
-    var version = "1.0.0";
+    var version = "1.0.1";
 
     /** Used to determine if values are of the language type Object */
     var objectTypes = {
@@ -22,6 +22,7 @@
         'object': true
     };
 
+    /* istanbul ignore next UMD code */
     /** Used as a reference to the global object */
     var root = (objectTypes[typeof window] && window) || this;
 
@@ -33,6 +34,7 @@
 
     /** Detect free variable `global` from Node.js or Browserified code and use it as `root` */
     var freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
+    /* istanbul ignore next UMD code */
     if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal)) {
         root = freeGlobal;
     }
@@ -280,27 +282,28 @@
      * @returns {Array}
      */
     function objectRotate (obj, result, clearUndef) {
-        var att, i, resultIndex, len, resultOffset;
+        var att, i, resultIndex, len, resultOffset, output;
 
         // Not an array? Send it back.
         if ( typeof obj !== 'object' ) {
             throw new TypeError("RC: Argument is not an object");
         }
 
-        if ( result === undefined ) {
-            result = [];
-        } else if ( !isArray(result) ) {
+        // Don't replace parameters to avoid optimization issues.
+        output = result || [];
+
+        if ( !isArray(output) ) {
             throw new TypeError("RC: Result argument is not an array");
         }
 
         // Get the existing result array length
-        resultOffset = result.length;
+        resultOffset = output.length;
 
         len = objectLength(obj);
 
         for (i = 0; i < len; i++) {
             resultIndex = i + resultOffset;
-            result[resultIndex] = {};
+            output[resultIndex] = {};
 
             /** Because of resultOffset, there is no way for the error condition to execute
             if ( result[resultIndex] === undefined ) {
@@ -312,12 +315,12 @@
 
             for (att in obj) {
                 if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][i] !== undefined ) ) {
-                    result[resultIndex][att] = obj[att][i];
+                    output[resultIndex][att] = obj[att][i];
                 }
             }
         }
 
-        return result;
+        return output;
     }
 
     /**
@@ -540,6 +543,7 @@
 
     /*--------------------------------------------------------------------------*/
 
+    /* istanbul ignore next UMD */
     // some AMD build optimizers like r.js check for condition patterns like the following:
     if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
         // Expose to the global object even when an AMD loader is present in
