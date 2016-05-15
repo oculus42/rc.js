@@ -42,10 +42,7 @@
     /** Detect the popular CommonJS extension `module.exports` */
     var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
 
-
     /*--------------------------------------------------------------------------*/
-
-
 
     /* Functions */
 
@@ -218,7 +215,7 @@
     }
 
     /**
-     *
+     * Performs a filter on a field and returns an array of matching indexes.
      * @param obj
      * @param field
      * @param filter
@@ -284,34 +281,23 @@
     function objectRotate (obj, result, clearUndef) {
         var att, i, resultIndex, len, resultOffset, output;
 
-        // Not an array? Send it back.
-        if ( typeof obj !== 'object' ) {
-            throw new TypeError("RC: Argument is not an object");
-        }
-
         // Don't replace parameters to avoid optimization issues.
         output = result || [];
 
-        if ( !isArray(output) ) {
+        // Not an array? Send it back.
+        if ( typeof obj !== 'object' ) {
+            throw new TypeError("RC: Argument is not an object");
+        } else if ( !isArray(output) ) {
             throw new TypeError("RC: Result argument is not an array");
         }
 
         // Get the existing result array length
         resultOffset = output.length;
-
         len = objectLength(obj);
 
         for (i = 0; i < len; i++) {
             resultIndex = i + resultOffset;
             output[resultIndex] = {};
-
-            /** Because of resultOffset, there is no way for the error condition to execute
-            if ( result[resultIndex] === undefined ) {
-                result[resultIndex] = {};
-            } else if ( typeof result[resultIndex] !== 'object' ) {
-                throw new TypeError("RC: Result contains incorrect type at index " + i);
-            }
-             **/
 
             for (att in obj) {
                 if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][i] !== undefined ) ) {
