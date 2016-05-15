@@ -5,44 +5,45 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 
-(function() {
+
+(function(definition) {
+    "use strict";
+
+    /* eslint-disable */
+    // This file will function properly as a <script> tag, or a module
+    // using CommonJS and NodeJS or RequireJS module formats.  In
+    // Common/Node/RequireJS, the module exports rowcol and when
+    // executed as a simple <script>, it creates a rowcol global instead.
+
+    /* istanbul ignore next */
+    // CommonJS
+    if (typeof exports === "object" && typeof module === "object") {
+        module.exports = definition();
+
+    // RequireJS
+    } else if (typeof define === "function" && define.amd) {
+        define(definition);
+
+    // <script>
+    } else if (typeof window !== "undefined" || typeof self !== "undefined") {
+        // Prefer window over self for add-on scripts. Use self for
+        // non-windowed contexts.
+        var global = typeof window !== "undefined" ? window : self;
+
+        // Get the `window` object and initialize rowcol as a global.
+        global.rowcol = definition();
+
+    } else {
+        throw new Error("This environment was not anticipated by Q. Please file a bug.");
+    }
+    /* eslint-enable */
+
+}(function(){
     "use strict";
 
     /*--------------------------------------------------------------------------*/
-    /*
-     * Constants and basic settings
-     * Structure and code from Lo-Dash 2.4.1 <http://lodash.com/>
-     */
 
     var version = "1.0.1";
-
-    /** Used to determine if values are of the language type Object */
-    var objectTypes = {
-        'function': true,
-        'object': true
-    };
-
-    /* istanbul ignore next UMD code */
-    /** Used as a reference to the global object */
-    var root = (objectTypes[typeof window] && window) || this;
-
-    /** Detect free variable `exports` */
-    var freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports;
-
-    /** Detect free variable `module` */
-    var freeModule = objectTypes[typeof module] && module && !module.nodeType && module;
-
-    /** Detect free variable `global` from Node.js or Browserified code and use it as `root` */
-    var freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
-    /* istanbul ignore next UMD code */
-    if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal)) {
-        root = freeGlobal;
-    }
-
-    /** Detect the popular CommonJS extension `module.exports` */
-    var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
-
-    /*--------------------------------------------------------------------------*/
 
     /* Functions */
 
@@ -146,7 +147,7 @@
         keyLen = objKeys.length;
 
         // One pass to create any missing arrays
-        for (i=0;i<keyLen;i++) {
+        for (i = 0; i < keyLen; i++) {
             att = objKeys[i];
             if (!result[att]) {
                 result[att] = [];
@@ -202,18 +203,6 @@
         return arrayRotateUnlimited(arr, result);
     }
 
-
-    /**
-     * Filter a column-data object for a particular field.
-     * @param {Object} obj
-     * @param {String} field
-     * @param {Function|String} filter
-     * @returns {*}
-     */
-    function objectFilter (obj, field, filter) {
-        return filterMerge(obj, filterIndexes(obj, field, filter));
-    }
-
     /**
      * Performs a filter on a field and returns an array of matching indexes.
      * @param obj
@@ -251,6 +240,17 @@
             }
         }
         return result;
+    }
+
+    /**
+     * Filter a column-data object for a particular field.
+     * @param {Object} obj
+     * @param {String} field
+     * @param {Function|String} filter
+     * @returns {*}
+     */
+    function objectFilter (obj, field, filter) {
+        return filterMerge(obj, filterIndexes(obj, field, filter));
     }
 
     /**
@@ -335,23 +335,15 @@
     }
 
     /**
-     * Create a proxy
-     * @param obj
-     * @param index
-     * @param clearUndef
-     */
-    function proxyFromIndex (obj, index, clearUndef) {
-        return new RCProxy(obj, index, clearUndef);
-    }
-
-    /**
      * A generic rotate function that accepts row or column data to rotate.
      * @param {Object|Array} obj
      * @returns {Array|Object}
      */
     function rotate(obj) {
         // Generic, which directs to the appropriate array/object rotate
-        if (typeof obj !== 'object') throw new TypeError("RC: rotate requires an object or an array");
+        if (typeof obj !== 'object') {
+            throw new TypeError("RC: rotate requires an object or an array");
+        }
 
         if ( isArray(obj) ) {
             return arrayRotate.apply(null, arguments);
@@ -370,27 +362,8 @@
         var len = objectLength(obj),
             i = 0;
 
-        for (;i<len;i++) {
+        for (; i < len; i++) {
             fn(objFromIndex(obj, i));
-        }
-    }
-
-    /**
-     * Increment over column-data like it was array data, making a proxy object for each index.
-     * @param {Object} obj
-     * @param {Function} fn
-     */
-    function objEach(obj, fn) {
-        var len = objectLength(obj),
-            i = 0,
-            prox;
-
-        for (;i<len;i++) {
-            prox = new RCProxy(obj, i);
-
-            fn(prox, i);
-
-            prox.finalize();
         }
     }
 
@@ -500,9 +473,38 @@
         return RCProxy;
     }());
 
+    /**
+     * Create a proxy
+     * @param obj
+     * @param index
+     * @param clearUndef
+     */
+    function proxyFromIndex (obj, index, clearUndef) {
+        return new RCProxy(obj, index, clearUndef);
+    }
+
+    /**
+     * Increment over column-data like it was array data, making a proxy object for each index.
+     * @param {Object} obj
+     * @param {Function} fn
+     */
+    function objEach(obj, fn) {
+        var len = objectLength(obj),
+            i = 0,
+            prox;
+
+        for ( ; i < len; i++) {
+            prox = new RCProxy(obj, i);
+
+            fn(prox, i);
+
+            prox.finalize();
+        }
+    }
+
     /*--------------------------------------------------------------------------*/
 
-    var rowcol = {
+    return {
         rotate: rotate,
         proxy: proxyFromIndex,
         array: {
@@ -526,36 +528,5 @@
             isArray: isArray
         }
     };
+}));
 
-    /*--------------------------------------------------------------------------*/
-
-    /* istanbul ignore next UMD */
-    // some AMD build optimizers like r.js check for condition patterns like the following:
-    if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
-        // Expose to the global object even when an AMD loader is present in
-        // case RowCol is loaded with a RequireJS shim config.
-            // See http://requirejs.org/docs/api.html#config-shim
-        root.rowcol = rowcol;
-
-        // define as an anonymous module so, through path mapping, it can be
-                // referenced as the "underscore" module
-        define(function() {
-            return rowcol;
-        });
-    }
-    // check for `exports` after `define` in case a build optimizer adds an `exports` object
-    else if (freeExports && freeModule) {
-        // in Node.js or RingoJS
-        if (moduleExports) {
-            (freeModule.exports = rowcol).rowcol = rowcol;
-        }
-        // in Narwhal or Rhino -require
-        else {
-            freeExports.rowcol = rowcol;
-        }
-    }
-    else {
-        // in a browser or Rhino
-        root.rowcol = rowcol;
-    }
-}());
