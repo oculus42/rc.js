@@ -14,38 +14,9 @@
      * Structure and code from Lo-Dash 2.4.1 <http://lodash.com/>
      */
 
-    var version = "2.0.0";
-
-    /** Used to determine if values are of the language type Object */
-    var objectTypes = {
-        'function': true,
-        'object': true
-    };
-
-    /* istanbul ignore next UMD code */
-    /** Used as a reference to the global object */
-    var root = (objectTypes[typeof window] && window) || this;
-
-    /** Detect free variable `exports` */
-    var freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports;
-
-    /** Detect free variable `module` */
-    var freeModule = objectTypes[typeof module] && module && !module.nodeType && module;
-
-    /** Detect free variable `global` from Node.js or Browserified code and use it as `root` */
-    var freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
-    /* istanbul ignore next UMD code */
-    if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal)) {
-        root = freeGlobal;
-    }
-
-    /** Detect the popular CommonJS extension `module.exports` */
-    var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
-
+    var version = "2.0.1";
 
     /*--------------------------------------------------------------------------*/
-
-
 
     /* Functions */
 
@@ -232,6 +203,7 @@
         if ( obj.hasOwnProperty(field) ) {
             indexes = getIndexes(obj[field], filter);
         }
+
         return indexes;
     }
 
@@ -255,6 +227,7 @@
                 result[att] = getByIndexes(obj[att], indexes);
             }
         }
+
         return result;
     }
 
@@ -277,6 +250,24 @@
     }
 
     /**
+     * Error throwing for object rotate
+     * @param {Object} obj
+     * @param result
+     */
+    function objectRotateErrors(obj, result) {
+
+        // Not an array? Send it back.
+        if ( typeof obj !== 'object' ) {
+            throw new TypeError("RC: Argument is not an object");
+        }
+
+        // If a result is passed and isn't an array, send it back.
+        if ( undefined !== result && !isArray(result) ) {
+            throw new TypeError("RC: Result argument is not an array");
+        }
+    }
+
+    /**
      * Rotates column-data to row-data and optionally adds it to an existing array.
      * @param {Object} obj
      * @param {Array} [result] Optional array init which we should place rotated data.
@@ -286,17 +277,11 @@
     function objectRotate (obj, result, clearUndef) {
         var att, i, resultIndex, len, resultOffset, output;
 
-        // Not an array? Send it back.
-        if ( typeof obj !== 'object' ) {
-            throw new TypeError("RC: Argument is not an object");
-        }
+        // Call out for errors
+        objectRotateErrors(obj, result);
 
         // Don't replace parameters to avoid optimization issues.
         output = result || [];
-
-        if ( !isArray(output) ) {
-            throw new TypeError("RC: Result argument is not an array");
-        }
 
         // Get the existing result array length
         resultOffset = output.length;
@@ -306,14 +291,6 @@
         for (i = 0; i < len; i++) {
             resultIndex = i + resultOffset;
             output[resultIndex] = {};
-
-            /** Because of resultOffset, there is no way for the error condition to execute
-            if ( result[resultIndex] === undefined ) {
-                result[resultIndex] = {};
-            } else if ( typeof result[resultIndex] !== 'object' ) {
-                throw new TypeError("RC: Result contains incorrect type at index " + i);
-            }
-             **/
 
             for (att in obj) {
                 if ( obj.hasOwnProperty(att) && ( !clearUndef || obj[att][i] !== undefined ) ) {
@@ -409,7 +386,6 @@
             prox.finalize();
         }
     }
-
 
     /**
      * Create an object and add a .commit() prototype to place the values back into the original.
@@ -545,33 +521,64 @@
 
     /*--------------------------------------------------------------------------*/
 
-    /* istanbul ignore next UMD */
-    // some AMD build optimizers like r.js check for condition patterns like the following:
-    if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
-        // Expose to the global object even when an AMD loader is present in
-        // case RowCol is loaded with a RequireJS shim config.
-            // See http://requirejs.org/docs/api.html#config-shim
-        root.rowcol = rowcol;
+    // Export mechanisms
+    (function(){
 
-        // define as an anonymous module so, through path mapping, it can be
-                // referenced as the "underscore" module
-        define(function() {
-            return rowcol;
-        });
-    }
-    // check for `exports` after `define` in case a build optimizer adds an `exports` object
-    else if (freeExports && freeModule) {
-        // in Node.js or RingoJS
-        if (moduleExports) {
-            (freeModule.exports = rowcol).rowcol = rowcol;
+        /** Used to determine if values are of the language type Object */
+        var objectTypes = {
+            'function': true,
+            'object': true
+        },
+
+            /** Used as a reference to the global object */
+            /* istanbul ignore next UMD code */
+            root = (objectTypes[typeof window] && window) || this,
+
+            /** Detect free variable `exports` */
+            freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports,
+
+            /** Detect free variable `module` */
+            freeModule = objectTypes[typeof module] && module && !module.nodeType && module,
+
+            /** Detect free variable `global` from Node.js or Browserified code and use it as `root` */
+            freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
+
+        /* istanbul ignore next UMD code */
+        if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal)) {
+            root = freeGlobal;
         }
-        // in Narwhal or Rhino -require
+
+        /** Detect the popular CommonJS extension `module.exports` */
+        var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
+
+        /* istanbul ignore next UMD */
+        // some AMD build optimizers like r.js check for condition patterns like the following:
+        if (typeof define === 'function' && define.amd && typeof define.amd === 'object') {
+            // Expose to the global object even when an AMD loader is present in
+            // case RowCol is loaded with a RequireJS shim config.
+            // See http://requirejs.org/docs/api.html#config-shim
+            root.rowcol = rowcol;
+
+            // define as an anonymous module so, through path mapping, it can be
+            // referenced as the "underscore" module
+            define(function() {
+                return rowcol;
+            });
+        }
+        // check for `exports` after `define` in case a build optimizer adds an `exports` object
+        else if (freeExports && freeModule) {
+            // in Node.js or RingoJS
+            if (moduleExports) {
+                (freeModule.exports = rowcol).rowcol = rowcol;
+            }
+            // in Narwhal or Rhino -require
+            else {
+                freeExports.rowcol = rowcol;
+            }
+        }
         else {
-            freeExports.rowcol = rowcol;
+            // in a browser or Rhino
+            root.rowcol = rowcol;
         }
-    }
-    else {
-        // in a browser or Rhino
-        root.rowcol = rowcol;
-    }
+    }());
 }());
