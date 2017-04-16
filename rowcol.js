@@ -146,15 +146,19 @@
             objKeys = Object.keys(result);
         }
 
-        keyLen = objKeys.length;
-
-        // One pass to create any missing arrays
-        for (i=0;i<keyLen;i++) {
-            att = objKeys[i];
-            if (!result[att]) {
-                result[att] = [];
+        // One pass to eliminate any unusable keys and create missing arrays
+        objKeys = objKeys.filter(function(key){
+            // Create arrays for missing keys
+            if (undefined === result[key]) {
+                result[key] = [];
+                return true;
             }
-        }
+
+            // Check if existing keys are arrays
+            return isArray(result[key]);
+        });
+
+        keyLen = objKeys.length;
 
         i = arr.length;
 
@@ -168,7 +172,6 @@
                 att = objKeys[j];
                 result[att][i] = obj[att];
             }
-
         }
 
         return result;
@@ -199,7 +202,6 @@
         // Explicit check: you could pass [0], limited could be falsy.
         if (limited !== undefined && limited !== false) {
             return arrayRotateLimited(arr, result, limited);
-
         }
 
         return arrayRotateUnlimited(arr, result);
