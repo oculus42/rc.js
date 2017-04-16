@@ -98,7 +98,7 @@ describe('rowcol', function(){
             });
 
             it('should accept a filter function', function(){
-                var filtTest = rowcol.object.filter(colData, 'name', function(idx, val){ return val === 'A'; });
+                var filtTest = rowcol.object.filter(colData, 'name', function(val, idx){ return val === 'A'; });
                 assert.equal(JSON.stringify(filtTest), aResult);
             });
 
@@ -121,7 +121,7 @@ describe('rowcol', function(){
             });
 
             it('should filter using a function', function(){
-                var filtTest = rowcol.object.filterIndexes(colData, "id", function(idx, val){ return val > 1; });
+                var filtTest = rowcol.object.filterIndexes(colData, "id", function(val, idx){ return val > 1; });
                 assert(filtTest.length === 2 && filtTest[0] === 1 && filtTest[1] === 2);
             });
 

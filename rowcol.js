@@ -14,7 +14,7 @@
      * Structure and code from Lo-Dash 2.4.1 <http://lodash.com/>
      */
 
-    var version = "1.0.0";
+    var version = "2.0.0";
 
     /** Used to determine if values are of the language type Object */
     var objectTypes = {
@@ -69,7 +69,7 @@
 
         if (typeof filter === 'function') {
             for (i = 0; i < len; i++) {
-                if ( filter(i, array[i]) ) {
+                if ( filter(array[i], i) ) {
                     indexes.push(i);
                 }
             }
