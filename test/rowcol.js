@@ -8,9 +8,14 @@ var rowData = [
     { id: 3, name: "C", approved: false}
 ],
 	colData = {
-		id: [1,2,3],
-		name: ["A","B","C"],
-		approved: [true,true,false]
+        id: [1,2,3],
+        name: ["A","B","C"],
+        approved: [true,true,false]
+    },
+    colDataWithUndefined = {
+        id: [1,2,3],
+        name: ["A",undefined,"C"],
+        approved: [true,true,false]
     },
     colString = JSON.stringify(colData),
     rowString = JSON.stringify(rowData);
@@ -79,6 +84,12 @@ describe('rowcol', function(){
                 assert.throws(function() {
                     final = rowcol.object.rotate(colData, "string");
                 });
+            });
+
+            it('should ignore undefined values when clearUndef is true', function(){
+                final = rowcol.object.rotate(colDataWithUndefined, undefined, true);
+
+                assert.equal("name" in final[1], false);
             });
         });
 
@@ -169,6 +180,7 @@ describe('rowcol', function(){
             /* Object merge tests */
             var mergeObj = { test: true},
                 resultObj;
+
             it('should accept an existing object', function(){
                 assert.doesNotThrow(function(){
                     resultObj = rowcol.object.objFromIndex(colData,1, undefined, mergeObj);
@@ -179,6 +191,12 @@ describe('rowcol', function(){
             it('should modify the passed result object', function(){
                 assert.equal(mergeObj, resultObj);
                 assert.equal(resultObj.name, 'B');
+            });
+
+            var undefTest = rowcol.object.objFromIndex(colDataWithUndefined, 1, true);
+
+            it('should ignore undefined values with clearUndef', function(){
+                assert.equal("name" in undefTest, false);
             });
 
         });
@@ -317,6 +335,24 @@ describe('rowcol', function(){
 
         it('should not permit changes after finalize',function(){
             assert.throws(function(){ prox.commit(); }, ReferenceError);
+        });
+
+        it('should support clearUndef', function(){
+            prox = rowcol.proxy(colDataWithUndefined, 1, true);
+            
+            assert.equal("name" in prox, false);
+
+            // Add the name to the proxy
+            prox.name = 'B';
+            prox.commit();
+
+            assert.equal(colDataWithUndefined.name[1], 'B');
+
+            // clearUndef will not move undefineds back into the object
+            prox.name = undefined;
+            prox.finalize();
+
+            assert.equal(colDataWithUndefined.name[1], 'B');
         });
 
     });

@@ -11,8 +11,8 @@ While JSON arrays of objects are very familiar for representing collections of d
 
 Performance Comparisons
 ---
-*  [Single Column Filter](http://jsperf.com/rc-simple/5) — For simple single-column comparisons, rowcol was 40-400% faster. With time, this performance has changed. As of December 27, 2015, rowcol is now slower in Chrome and Firefox, while Safari is faster.
-*  [Simple Equivalence Filter](http://jsperf.com/rc-equiv/7) — Simple equivalence is an order of magnitude faster than native row filtering, except, strangely, in Firefox (as of December 27, 2015).
+*  [Single Column Filter](http://jsperf.com/rc-simple/6) — For simple single-column comparisons, rowcol is up to 3.8x faster. With time, this performance has changed. As of December 27, 2015, rowcol was slower in Chrome and Firefox, while Safari was faster. As of March 15, 2016, it is >2x faster in Chrome and Safari and a third slower in Firefox.
+*  [Simple Equivalence Filter](http://jsperf.com/rc-equiv/8) — Simple equivalence is an order of magnitude faster than native row filtering, across Chrome, Firefox, and Safari as of March 15, 2016.
 *  More to come.
 
 Problems with Rows
@@ -25,7 +25,7 @@ Benefits of Columns
 *  Heterogeneous data is transmitted in a more compact format. Two real-world test objects with complex, multi-level data saw substantial reductions (row/column rotation was performed on multiple levels):
   *  10936 became 7117 characters for a ~35% reduction.
   *  123903 became 90892 characters for a ~27% reduction.
-  *  TODO: Synthetic tests and JSPerf examples.
+  *  Need to add Synthetic tests with looping and rotation performance examples.
 *  Filters return arrays of indexes for easy set manipulation (union, intersection, difference). In fairness you could do this with rows, but it is a requirement of column-oriented filtering
 *  Some column filters can be performed with simple comparisons: no filter function overhead.
 

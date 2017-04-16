@@ -10,7 +10,10 @@
   "author": "Samuel Rouse <samuel.rouse@gmail.com> (http://samuelrouse.com)",
   "license": "MIT",
   "bugs": "https://github.com/oculus42/rc.js/issues",
-  "repository": "oculus42/rc.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oculus42/rc.js.git"
+  },
   "engines": {
     "node": ">0.10.0",
     "iojs": ">1.0.0",
