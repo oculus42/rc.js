@@ -1,5 +1,5 @@
 const assert = require('assert');
-const rowcol = require('../rowcol');
+const rowcol = require('../src/rowcol');
 const { has } = require('../src/util');
 
 const rowData = [
