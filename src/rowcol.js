@@ -29,6 +29,34 @@ function isArray(obj) {
   return Object.prototype.toString.call(obj) === '[object Array]';
 }
 
+function getIndexesWithFunction(array, filter) {
+  const indexes = [];
+  const len = array.length;
+  let i;
+
+  for (i = 0; i < len; i += 1) {
+    if (filter(array[i], i)) {
+      indexes.push(i);
+    }
+  }
+
+  return indexes;
+}
+
+function getIndexesWithValue(array, filter) {
+  const indexes = [];
+  const len = array.length;
+  let i;
+
+  for (i = 0; i < len; i += 1) {
+    if (array[i] === filter) {
+      indexes.push(i);
+    }
+  }
+
+  return indexes;
+}
+
 /**
  * Returns an array of indexes that match a filter string or function.
  * @param {Array} array Array of values to match
@@ -36,24 +64,10 @@ function isArray(obj) {
  * @returns {Array} Array of indexes that match the filter.
  */
 function getIndexes(array, filter) {
-  const indexes = [];
-  const len = array.length;
-  let i;
-
   if (typeof filter === 'function') {
-    for (i = 0; i < len; i += 1) {
-      if (filter(array[i], i)) {
-        indexes.push(i);
-      }
-    }
-  } else {
-    for (i = 0; i < len; i += 1) {
-      if (array[i] === filter) {
-        indexes.push(i);
-      }
-    }
+    return getIndexesWithFunction(array, filter);
   }
-  return indexes;
+  return getIndexesWithValue(array, filter);
 }
 
 /**
@@ -80,22 +94,13 @@ function getByIndexes(array, indexes) {
  * @returns {Object}
  */
 function arrayRotateUnlimited(arr, result) {
-  let obj;
-
-  for (let i = arr.length; i;) {
-    i -= 1;
-    obj = arr[i];
-
-    Object.entries(obj).reduce((acc, [key, val]) => {
-      if (acc[key] === undefined) {
-        acc[key] = [];
-      }
-      acc[key][i] = val;
-      return acc;
-    }, result);
-  }
-
-  return result;
+  return arr.reduce((res, obj, i) => Object.entries(obj).reduce((acc, [key, val]) => {
+    if (acc[key] === undefined) {
+      acc[key] = [];
+    }
+    acc[key][i] = val;
+    return acc;
+  }, res), result);
 }
 
 /**
@@ -106,21 +111,12 @@ function arrayRotateUnlimited(arr, result) {
  * @returns {Object}
  */
 function arrayRotateLimited(arr, result, limited) {
-  let objKeys;
   let obj;
   let att;
-  let j;
 
-  // Is limited the list of keys?
-  if (isArray(limited)) {
-    objKeys = limited;
-  } else {
-    // Get the keys for limited rotate
-    objKeys = Object.keys(result);
-  }
-
+  // If this is limited to the list of keys, get the keys for limited rotate
   // One pass to eliminate any unusable keys and create missing arrays
-  objKeys = objKeys.filter((key) => {
+  const objKeys = (isArray(limited) ? limited : Object.keys(result)).filter((key) => {
     // Create arrays for missing keys
     if (undefined === result[key]) {
       result[key] = [];
@@ -139,7 +135,7 @@ function arrayRotateLimited(arr, result, limited) {
 
     // All variables submit to for-in loops
     // JSHint hates it, but Object.keys
-    for (j = 0; j < keyLen; j += 1) {
+    for (let j = 0; j < keyLen; j += 1) {
       att = objKeys[j];
       result[att][i] = obj[att];
     }
