@@ -1,43 +1,40 @@
-/**
- * Created by sirouse on 4/19/15.
- */
-module.exports = function(grunt) {
-    var banner = '/*\n<%= pkg.name %> <%= pkg.version %>';
-    banner += '- <%= pkg.description %>\n<%= pkg.repository.url %>\n';
-    banner += 'Built on <%= grunt.template.today("yyyy-mm-dd") %>\n*/\n';
+module.exports = function (grunt) {
+//   const banner = `/*
+// <%= pkg.name %> <%= pkg.version %>- <%= pkg.description %>
+// <%= pkg.repository.url %>
+// Built on <%= grunt.template.today("yyyy-mm-dd") %>
+// */
+// `;
 
-    grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
-        mocha_istanbul: {
-            coverage: {
-                src: 'test', // a folder works nicely
-                options: {
-                    mask: '*.js'
-                }
-            }
+  grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
+    mocha_istanbul: {
+      coverage: {
+        src: 'test', // a folder works nicely
+        options: {
+          mask: '*.js',
         },
-        simplemocha: {
-            options: {
-                globals: ['expect'],
-                timeout: 3000,
-                ignoreLeaks: false,
-                ui: 'bdd',
-                reporter: 'tap'
-            },
-            all: { src: ['test/*.js'] }
-        }
-    });
+      },
+    },
+    simplemocha: {
+      options: {
+        globals: ['expect'],
+        timeout: 3000,
+        ignoreLeaks: false,
+        ui: 'bdd',
+        reporter: 'tap',
+      },
+      all: { src: ['test/*.js'] },
+    },
+  });
 
-    grunt.loadNpmTasks('grunt-simple-mocha');
+  grunt.loadNpmTasks('grunt-simple-mocha');
 
-    grunt.loadNpmTasks('grunt-mocha-istanbul');
+  grunt.loadNpmTasks('grunt-mocha-istanbul');
 
-    grunt.registerTask('default',
-        ['mocha_istanbul']);
+  grunt.registerTask('default', ['mocha_istanbul']);
 
-    grunt.registerTask('test',
-        ['simplemocha']);
+  grunt.registerTask('test', ['simplemocha']);
 
-    grunt.registerTask('cover',
-        ['mocha_istanbul']);
+  grunt.registerTask('cover', ['mocha_istanbul']);
 };
