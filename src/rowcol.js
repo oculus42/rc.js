@@ -326,6 +326,126 @@ function readEach(obj, fn) {
 }
 
 /**
+ * Create an object and add a .commit() prototype to place the values back into the original.
+ * Useful for moving simple data types around. Objects and arrays will be automatically referenced.
+ * @constructor
+ * @param {Object} obj - A columnar object
+ * @param {number} index - The index to convert into a row-based object
+ * @param {Boolean} [clearUndef] - Clear undefined attributes when copying the object.
+ * @example
+ * var proxyRow = new RowcolProxy(colData, index);
+ */
+const RCProxy = (function () {
+  // TODO - swap out for ES6 proxy object
+  const proxyObj = [];
+  const proxyIdx = [];
+  const proxyClearFlag = [];
+  const proxyThis = [];
+  let guid = 0;
+
+  /**
+   * Uses a private array to locate the same object,
+   * so the proxy doesn't expose itself to modification.
+   * We compare the passed object against an array of existing RowcolProxy objects;
+   * basically pointer comparison.
+   * @param {RowcolProxy} proxy
+   * @returns {number} The proxy ID to allow commit and destroy to locate the correct element
+   * @private
+   */
+  function proxyGetId(proxy) {
+    let pid;
+
+    // Most likely to be at the end, so start there
+    for (let i = proxyThis.length; i;) {
+      i -= 1;
+      if (proxyThis[i] === proxy) {
+        pid = i;
+        break;
+      }
+    }
+
+    if (pid === undefined) {
+      throw new ReferenceError('Proxy is finalized and cannot be used again.');
+    }
+    return pid;
+  }
+
+  /**
+   * The actual RowcolProxy constructor.
+   * @param {Object} obj
+   * @param {number} index
+   * @param {Boolean} [clearUndef]
+   * @constructor
+   */
+  function RowcolProxy(obj, index, clearUndef) {
+    // Increment the guid
+    guid += 1;
+
+    // Set the private data.
+    proxyObj[guid] = obj;
+    proxyIdx[guid] = index;
+    proxyClearFlag[guid] = clearUndef;
+    proxyThis[guid] = this;
+
+    // Call reusable code for objFromIndex
+    objFromIndex(obj, index, clearUndef, this);
+  }
+
+  // Defined inside the constructor to give it access to the originating object and parameters
+
+  /**
+   * Commits the changes from the proxy to the original.
+   */
+  RowcolProxy.prototype.commit = function () {
+    const pid = proxyGetId(this);
+    const obj = proxyObj[pid];
+    const index = proxyIdx[pid];
+    const clearUndef = proxyClearFlag[pid];
+
+    Object.entries(this).reduce((acc, [key, val]) => {
+      if (key === '__rcProxyId') {
+        return acc;
+      }
+      if (!clearUndef || val !== undefined) {
+        acc[key][index] = val;
+      }
+      return acc;
+    }, obj);
+  };
+
+  /**
+   * Removes the proxy to prevent memory leaks
+   */
+  RowcolProxy.prototype.destroy = function () {
+    const pid = proxyGetId(this);
+    delete proxyThis[pid];
+    delete proxyObj[pid];
+    delete proxyIdx[pid];
+    delete proxyClearFlag[pid];
+  };
+
+  /**
+   * Commit and destroy the proxy, as a single step
+   */
+  RowcolProxy.prototype.finalize = function () {
+    this.commit();
+    this.destroy();
+  };
+
+  return RowcolProxy;
+}());
+
+/**
+ * Create a proxy
+ * @param obj
+ * @param index
+ * @param clearUndef
+ */
+function proxyFromIndex(obj, index, clearUndef) {
+  return new RCProxy(obj, index, clearUndef);
+}
+
+/**
  * Increment over column-data like it was array data, making a proxy object for each index.
  * @param {Object} obj
  * @param {Function} fn
@@ -342,126 +462,6 @@ function objEach(obj, fn) {
 
     prox.finalize();
   }
-}
-
-/**
- * Create an object and add a .commit() prototype to place the values back into the original.
- * Useful for moving simple data types around. Objects and arrays will be automatically referenced.
- * @constructor
- * @param {Object} obj - A columnar object
- * @param {number} index - The index to convert into a row-based object
- * @param {Boolean} [clearUndef] - Clear undefined attributes when copying the object.
- * @example
- * var proxyRow = new RCProxy(colData, index);
- */
-const RCProxy = (function () {
-  // TODO - swap out for ES6 proxy object
-  let __obj = [];
-  let __idx = [];
-  let __clr = [];
-  let __this = [];
-  let guid = 0;
-
-  /**
-   * Uses a private array to locate the same object,
-   * so the proxy doesn't expose itself to modification.
-   * We compare the passed object against an array of existing RCProxy objects;
-   * basically pointer comparison.
-   * @param {RCProxy} proxy
-   * @returns {number} The proxy ID to allow commit and destroy to locate the correct element
-   * @private
-   */
-  function __getId(proxy) {
-    let pid;
-
-    // Most likely to be at the end, so start there
-    for (let i = __this.length; i;) {
-      i -= 1;
-      if (__this[i] === proxy) {
-        pid = i;
-        break;
-      }
-    }
-
-    if (pid === undefined) {
-      throw new ReferenceError('Proxy is finalized and cannot be used again.');
-    }
-    return pid;
-  }
-
-  /**
-   * The actual RCProxy constructor.
-   * @param {Object} obj
-   * @param {number} index
-   * @param {Boolean} [clearUndef]
-   * @constructor
-   */
-  function RCProxy(obj, index, clearUndef) {
-    // Increment the guid
-    guid += 1;
-
-    // Set the private data.
-    __obj[guid] = obj;
-    __idx[guid] = index;
-    __clr[guid] = clearUndef;
-    __this[guid] = this;
-
-    // Call reusable code for objFromIndex
-    objFromIndex(obj, index, clearUndef, this);
-  }
-
-  // Defined inside the constructor to give it access to the originating object and parameters
-
-  /**
-   * Commits the changes from the proxy to the original.
-   */
-  RCProxy.prototype.commit = function () {
-    const pid = __getId(this);
-    const obj = __obj[pid];
-    const index = __idx[pid];
-    const clearUndef = __clr[pid];
-
-    Object.entries(this).reduce((acc, [key, val]) => {
-      if (key === '__rcProxyId') {
-        return acc;
-      }
-      if (!clearUndef || val !== undefined) {
-        acc[key][index] = val;
-      }
-      return acc;
-    }, obj);
-  };
-
-  /**
-   * Removes the proxy to prevent memory leaks
-   */
-  RCProxy.prototype.destroy = function () {
-    const pid = __getId(this);
-    delete __this[pid];
-    delete __obj[pid];
-    delete __idx[pid];
-    delete __clr[pid];
-  };
-
-  /**
-   * Commit and destroy the proxy, as a single step
-   */
-  RCProxy.prototype.finalize = function () {
-    this.commit();
-    this.destroy();
-  };
-
-  return RCProxy;
-}());
-
-/**
- * Create a proxy
- * @param obj
- * @param index
- * @param clearUndef
- */
-function proxyFromIndex(obj, index, clearUndef) {
-  return new RCProxy(obj, index, clearUndef);
 }
 
 /*--------------------------------------------------------------------------*/
