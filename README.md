@@ -1,6 +1,8 @@
+[![npm](https://img.shields.io/npm/v/rowcol.svg)](https://www.npmjs.com/package/rowcol)
 [![Build Status](https://travis-ci.org/oculus42/rc.js.svg?branch=master)](https://travis-ci.org/oculus42/rc.js)
 [![Code Climate](https://codeclimate.com/github/oculus42/rc.js/badges/gpa.svg)](https://codeclimate.com/github/oculus42/rc.js)
 [![Test Coverage](https://codeclimate.com/github/oculus42/rc.js/badges/coverage.svg)](https://codeclimate.com/github/oculus42/rc.js/coverage)
+[![Dependencies](https://david-dm.org/oculus42/rc.js.svg)](https://david-dm.org/oculus42/rc.js)
 
 rowcol.js - Row/Column Data Manipulation
 =====
