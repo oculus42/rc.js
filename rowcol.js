@@ -178,7 +178,6 @@
         return arrayRotateUnlimited(arr, result);
     }
 
-
     /**
      * Filter a column-data object for a particular field.
      * @param {Object} obj
