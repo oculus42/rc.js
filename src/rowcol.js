@@ -133,15 +133,12 @@ function arrayRotateLimited(arr, result, limited) {
 }
 
 /**
- * Rotate an array of row-data into a column-data object
+ * Error checking (and throwing) for the arrayRotate method
  * @param {Array} arr
  * @param {Object} [result] Result object to use
  * @param {boolean} [limited] Only update keys on the result object; a limited rotation
- * @returns {Object}
  */
-function arrayRotate(arr, result, limited = false) {
-  const data = result || {};
-
+function arrayRotateErrors(arr, result, limited) {
   // Not an array? Send it back.
   if (!isArray(arr)) {
     throw new TypeError('RC: Argument is not an array');
@@ -150,6 +147,19 @@ function arrayRotate(arr, result, limited = false) {
   if (limited && (typeof result !== 'object' || result === undefined)) {
     throw new TypeError("RC: Must pass a result object when 'limited' is true");
   }
+}
+
+/**
+ * Rotate an array of row-data into a column-data object
+ * @param {Array} arr
+ * @param {Object} [result] Result object to use
+ * @param {boolean} [limited] Only update keys on the result object; a limited rotation
+ * @returns {Object}
+ */
+function arrayRotate(arr, result, limited = false) {
+  arrayRotateErrors(arr, result, limited);
+
+  const data = result || {};
 
   // Explicit check: you could pass [0], limited could be falsy.
   if (limited) {
