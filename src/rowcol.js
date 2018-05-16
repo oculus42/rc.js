@@ -375,7 +375,7 @@ const RCProxy = (function () {
   /**
    * Commits the changes from the proxy to the original.
    */
-  RowcolProxy.prototype.commit = function () {
+  RowcolProxy.prototype.commit = function commit() {
     const pid = proxyGetId(this);
     const obj = proxyObj[pid];
     const index = proxyIdx[pid];
@@ -395,7 +395,7 @@ const RCProxy = (function () {
   /**
    * Removes the proxy to prevent memory leaks
    */
-  RowcolProxy.prototype.destroy = function () {
+  RowcolProxy.prototype.destroy = function destroy() {
     const pid = proxyGetId(this);
     delete proxyThis[pid];
     delete proxyObj[pid];
@@ -406,7 +406,7 @@ const RCProxy = (function () {
   /**
    * Commit and destroy the proxy, as a single step
    */
-  RowcolProxy.prototype.finalize = function () {
+  RowcolProxy.prototype.finalize = function finalize() {
     this.commit();
     this.destroy();
   };
