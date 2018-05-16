@@ -17,7 +17,7 @@ const version = '3.0.0';
 /*--------------------------------------------------------------------------*/
 
 /* Functions */
-const { has } = require('./src/util');
+const { has } = require('./util');
 
 
 /**
