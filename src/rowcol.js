@@ -111,9 +111,6 @@ function arrayRotateUnlimited(arr, result) {
  * @returns {Object}
  */
 function arrayRotateLimited(arr, result, limited) {
-  let obj;
-  let att;
-
   // If this is limited to the list of keys, get the keys for limited rotate
   // One pass to eliminate any unusable keys and create missing arrays
   const objKeys = (isArray(limited) ? limited : Object.keys(result)).filter((key) => {
@@ -127,19 +124,10 @@ function arrayRotateLimited(arr, result, limited) {
     return isArray(result[key]);
   });
 
-  const keyLen = objKeys.length;
-
-  for (let i = arr.length; i;) {
-    i -= 1;
-    obj = arr[i];
-
-    // All variables submit to for-in loops
-    // JSHint hates it, but Object.keys
-    for (let j = 0; j < keyLen; j += 1) {
-      att = objKeys[j];
-      result[att][i] = obj[att];
-    }
-  }
+  arr.forEach((obj, i) => objKeys.reduce((acc, att) => {
+    acc[att][i] = obj[att];
+    return acc;
+  }, result));
 
   return result;
 }
@@ -164,7 +152,7 @@ function arrayRotate(arr, result, limited = false) {
   }
 
   // Explicit check: you could pass [0], limited could be falsy.
-  if (limited !== undefined && limited !== false) {
+  if (limited) {
     return arrayRotateLimited(arr, data, limited);
   }
 
