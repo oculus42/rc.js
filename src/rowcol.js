@@ -19,16 +19,6 @@ const version = '3.0.0';
 /* Functions */
 const { has } = require('./util');
 
-
-/**
- * Indicates if the passed object is an array
- * @param {*} obj
- * @returns {boolean}
- */
-function isArray(obj) {
-  return Object.prototype.toString.call(obj) === '[object Array]';
-}
-
 function getIndexesWithFunction(array, filter) {
   const indexes = [];
   const len = array.length;
@@ -113,7 +103,7 @@ function arrayRotateUnlimited(arr, result) {
 function arrayRotateLimited(arr, result, limited) {
   // If this is limited to the list of keys, get the keys for limited rotate
   // One pass to eliminate any unusable keys and create missing arrays
-  const objKeys = (isArray(limited) ? limited : Object.keys(result)).filter((key) => {
+  const objKeys = (Array.isArray(limited) ? limited : Object.keys(result)).filter((key) => {
     // Create arrays for missing keys
     if (undefined === result[key]) {
       result[key] = [];
@@ -121,7 +111,7 @@ function arrayRotateLimited(arr, result, limited) {
     }
 
     // Check if existing keys are arrays
-    return isArray(result[key]);
+    return Array.isArray(result[key]);
   });
 
   arr.forEach((obj, i) => objKeys.reduce((acc, att) => {
@@ -140,7 +130,7 @@ function arrayRotateLimited(arr, result, limited) {
  */
 function arrayRotateErrors(arr, result, limited) {
   // Not an array? Send it back.
-  if (!isArray(arr)) {
+  if (!Array.isArray(arr)) {
     throw new TypeError('RC: Argument is not an array');
   }
 
@@ -236,7 +226,7 @@ function objectRotateErrors(obj, result) {
   }
 
   // If a result is passed and isn't an array, send it back.
-  if (undefined !== result && !isArray(result)) {
+  if (undefined !== result && !Array.isArray(result)) {
     throw new TypeError('RC: Result argument is not an array');
   }
 }
@@ -294,7 +284,7 @@ function rotate(obj, ...args) {
   // Generic, which directs to the appropriate array/object rotate
   if (typeof obj !== 'object') throw new TypeError('RC: rotate requires an object or an array');
 
-  if (isArray(obj)) {
+  if (Array.isArray(obj)) {
     return arrayRotate(obj, ...args);
   }
   return objectRotate(obj, ...args);
@@ -474,9 +464,6 @@ const rowcol = {
     objLength: objectLength,
   },
   VERSION: version,
-  test: {
-    isArray,
-  },
 };
 
 /*--------------------------------------------------------------------------*/

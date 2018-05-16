@@ -346,23 +346,4 @@ describe('rowcol', () => {
   describe('#rotate', () => {
 
   });
-
-  describe('test coverage', () => {
-    describe('#isArray', () => {
-      it('should recognize a valid array', () => {
-        assert.equal(rowcol.test.isArray([]), true);
-        assert.equal(rowcol.test.isArray([1, 2, 3]), true);
-        assert.equal(rowcol.test.isArray(JSON.parse('["a","b","c"]')), true);
-        assert.equal(rowcol.test.isArray(JSON.parse('["a","b","c"]')), true);
-      });
-
-      it('should reject non-array types', () => {
-        assert.equal(rowcol.test.isArray(true), false);
-        assert.equal(rowcol.test.isArray(false), false);
-        assert.equal(rowcol.test.isArray(''), false);
-        assert.equal(rowcol.test.isArray(0), false);
-        assert.equal(rowcol.test.isArray({ 0: true, 1: false, length: 2 }), false);
-      });
-    });
-  });
 });
