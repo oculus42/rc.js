@@ -232,6 +232,23 @@ function objectRotateErrors(obj, result) {
 }
 
 /**
+ * Create an object from the specified column index
+ * @param {Object} obj
+ * @param {number} index
+ * @param {Boolean} [clearUndef]
+ * @param {Object} [result]
+ * @returns {*}
+ */
+function objFromIndex(obj, index, clearUndef, result = {}) {
+  return Object.entries(obj).reduce((acc, [key, val]) => {
+    if (!clearUndef || val[index] !== undefined) {
+      acc[key] = val[index];
+    }
+    return acc;
+  }, result);
+}
+
+/**
  * Rotates column-data to row-data and optionally adds it to an existing array.
  * @param {Object} obj
  * @param {Array} [result] Optional array init which we should place rotated data.
@@ -251,32 +268,10 @@ function objectRotate(obj, result, clearUndef) {
   const len = objectLength(obj);
 
   for (let i = 0; i < len; i += 1) {
-    output[i + resultOffset] = Object.entries(obj).reduce((acc, [key, val]) => {
-      if (!clearUndef || val[i] !== undefined) {
-        acc[key] = val[i];
-      }
-      return acc;
-    }, {});
+    output[i + resultOffset] = objFromIndex(obj, i, clearUndef);
   }
 
   return output;
-}
-
-/**
- * Create a
- * @param {Object} obj
- * @param {number} index
- * @param {Boolean} [clearUndef]
- * @param {Object} [result]
- * @returns {*}
- */
-function objFromIndex(obj, index, clearUndef, result = {}) {
-  return Object.entries(obj).reduce((acc, [key, val]) => {
-    if (!clearUndef || val[index] !== undefined) {
-      acc[key] = val[index];
-    }
-    return acc;
-  }, result);
 }
 
 /**
