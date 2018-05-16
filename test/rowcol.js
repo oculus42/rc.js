@@ -1,386 +1,368 @@
-var assert = require("assert");
-var rowcol = require("../rowcol");
+const assert = require('assert');
+const rowcol = require('../rowcol');
+const { has } = require('../src/util');
 
+const rowData = [
+  { id: 1, name: 'A', approved: true },
+  { id: 2, name: 'B', approved: true },
+  { id: 3, name: 'C', approved: false },
+];
+const colData = {
+  id: [1, 2, 3],
+  name: ['A', 'B', 'C'],
+  approved: [true, true, false],
+};
+const colDataWithUndefined = {
+  id: [1, 2, 3],
+  name: ['A', undefined, 'C'],
+  approved: [true, true, false],
+};
+const colString = JSON.stringify(colData);
+const rowString = JSON.stringify(rowData);
 
-var rowData = [
-    { id: 1, name: "A", approved: true},
-    { id: 2, name: "B", approved: true},
-    { id: 3, name: "C", approved: false}
-],
-	colData = {
-        id: [1,2,3],
-        name: ["A","B","C"],
-        approved: [true,true,false]
-    },
-    colDataWithUndefined = {
-        id: [1,2,3],
-        name: ["A",undefined,"C"],
-        approved: [true,true,false]
-    },
-    colString = JSON.stringify(colData),
-    rowString = JSON.stringify(rowData);
+describe('rowcol', () => {
+  describe('object', () => {
+    /* Simple Length Test */
+    describe('#objLength', () => {
+      it('should return the number of array entries of the first key', () => {
+        assert.equal(rowcol.object.objLength(colData), 3);
+      });
 
-describe('rowcol', function(){
-    describe('object', function(){
-
-        /* Simple Length Test */
-        describe('#objLength', function(){
-            it('should return the number of array entries of the first key', function(){
-                assert.equal(rowcol.object.objLength(colData), 3);
-            });
-
-            it('should return zero for an empty object', function(){
-                assert.equal(rowcol.object.objLength(Object.create(null)), 0);
-            });
-        });
-
-        /* Explicit Object Rotates */
-        describe('#rotate', function(){
-            it('should return an array of objects', function(){
-                assert.equal(JSON.stringify(rowcol.object.rotate(colData)), rowString, "col->row rotation - explicit");
-            });
-
-            /* Rotate into Tests */
-            var baseResult = [{
-                    id: 5,
-                    name: 'E',
-                    approved: false
-                }],
-                final = rowcol.object.rotate(colData, baseResult);
-
-            it('should modify the passed result', function(){
-                assert.equal(baseResult, final);
-            });
-
-            it('should not overwrite existing results', function(){
-                assert.equal(final.length, 4);
-                assert.equal(final[0].name, "E");
-                assert.equal(final[3].name, "C");
-            });
-
-
-            it('should accept only array and undefined as results', function(){
-
-                assert.doesNotThrow(function() {
-                    final = rowcol.object.rotate(colData, [1,2,3]);
-                });
-
-                assert.equal(final.length, 6);
-
-                assert.doesNotThrow(function() {
-                    final = rowcol.object.rotate(colData, undefined);
-                });
-            });
-
-            it('should throw if not an object', function(){
-
-                assert.throws(function() {
-                    rowcol.object.rotate("string");
-                });
-            });
-
-            it('should throw if not an result is the wrong type', function(){
-
-                assert.throws(function() {
-                    final = rowcol.object.rotate(colData, "string");
-                });
-            });
-
-            it('should ignore undefined values when clearUndef is true', function(){
-                final = rowcol.object.rotate(colDataWithUndefined, undefined, true);
-
-                assert.equal("name" in final[1], false);
-            });
-        });
-
-        /* Filters */
-        describe('#filter', function(){
-
-            var aResult = '{"id":[1],"name":["A"],"approved":[true]}';
-
-            it('should accept a string value', function(){
-                var filtTest = rowcol.object.filter(colData, 'name', 'A');
-                assert.equal(JSON.stringify(filtTest), aResult);
-            });
-
-            it('should accept a Boolean value', function(){
-                var filtTest = rowcol.object.filter(colData, 'approved', true);
-                assert.equal(filtTest.name.length, 2);
-            });
-
-            it('should accept a filter function', function(){
-                var filtTest = rowcol.object.filter(colData, 'name', function(val, idx){ return val === 'A'; });
-                assert.equal(JSON.stringify(filtTest), aResult);
-            });
-
-            it('should return an empty object no matches', function(){
-                var filtTest = rowcol.object.filter(colData, "name", "Q");
-                assert.equal(JSON.stringify(filtTest), '{}');
-            });
-        });
-
-        describe('#filterIndexes', function(){
-
-            it('should filter Boolean values', function(){
-                var filtTest = rowcol.object.filterIndexes(colData, "approved", true);
-                assert(filtTest.length === 2 && filtTest[0] === 0 && filtTest[1] === 1);
-            });
-
-            it('should filter string values', function(){
-                var filtTest = rowcol.object.filterIndexes(colData, "name", "B");
-                assert(filtTest.length === 1 && filtTest[0] === 1);
-            });
-
-            it('should filter using a function', function(){
-                var filtTest = rowcol.object.filterIndexes(colData, "id", function(val, idx){ return val > 1; });
-                assert(filtTest.length === 2 && filtTest[0] === 1 && filtTest[1] === 2);
-            });
-
-            it('should return an empty array for no matches', function(){
-                var filtTest = rowcol.object.filterIndexes(colData, "name", "Q");
-                assert.equal(filtTest.length, 0);
-            });
-        });
-
-        describe('#filterMerge', function(){
-            it('should return an empty object when passed no indexes', function(){
-                var mergeResult = rowcol.object.filterMerge(colData);
-                assert.equal(Object.keys(mergeResult).length, 0);
-            });
-
-            it('should return an empty object when passed empty indexes', function(){
-                var mergeResult = rowcol.object.filterMerge(colData, []);
-                assert.equal(Object.keys(mergeResult).length, 0);
-            });
-
-            it('should return an object when passed an index of [0]', function(){
-                var mergeResult = rowcol.object.filterMerge(colData, [0]);
-                assert.equal(Object.keys(mergeResult).length, 3);
-            });
-
-        });
-
-        /* ObjFromIndex */
-        describe('#objFromIndex', function(){
-            var idxTest = rowcol.object.objFromIndex(colData, 1);
-
-            it('should extract the values for the appropriate index', function(){
-                assert.equal(idxTest.name,colData.name[1]);
-            });
-
-            it('should not modify the original (arrays/object values excepted)', function(){
-                idxTest.name = "M";
-                assert.equal(colData.name[1], "B", "objFromIndex: value linked to original");
-            });
-
-            it('should not be a Proxy', function(){
-                assert(idxTest.hasOwnProperty("commit") === false, "objFromIndex: provides proxy interface");
-            });
-
-            /* Object merge tests */
-            var mergeObj = { test: true},
-                resultObj;
-
-            it('should accept an existing object', function(){
-                assert.doesNotThrow(function(){
-                    resultObj = rowcol.object.objFromIndex(colData,1, undefined, mergeObj);
-                });
-            });
-
-            resultObj = rowcol.object.objFromIndex(colData,1, undefined, mergeObj);
-            it('should modify the passed result object', function(){
-                assert.equal(mergeObj, resultObj);
-                assert.equal(resultObj.name, 'B');
-            });
-
-            var undefTest = rowcol.object.objFromIndex(colDataWithUndefined, 1, true);
-
-            it('should ignore undefined values with clearUndef', function(){
-                assert.equal("name" in undefTest, false);
-            });
-
-        });
-
-        /* readEach Tests */
-        describe('#readEach', function() {
-
-            var eachLen = 0;
-
-            rowcol.object.readEach(colData, function (obj, idx) {
-                eachLen++;
-                obj.id = 4;
-            });
-
-            it('should loop through each index', function(){
-                assert(eachLen === 3, "readEach: not looping through entire object");
-            });
-
-            it('should not allow simple values to be edited', function(){
-                assert(colData.id[0] === 1, "readEach: able to edit original");
-            });
-
-
-        });
-
-        /* Each Tests */
-        describe('#each', function(){
-            var colData = colData = {
-                    id: [1,2,3],
-                    name: ["A","B","C"],
-                    approved: [true,true,false]
-                },
-                eachLen = 0;
-
-            rowcol.object.each(colData, function(obj){
-                eachLen++;
-                obj.id = 4;
-            });
-
-            it('should loop through each index', function(){
-                assert(eachLen === 3, "readEach: not looping through entire object");
-            });
-
-            it('should commit changes to the original object', function(){
-                assert(colData.id.toString() === '4,4,4', "each: changes were not permanent");
-            });
-        });
-
+      it('should return zero for an empty object', () => {
+        assert.equal(rowcol.object.objLength(Object.create(null)), 0);
+      });
     });
 
-    describe('array', function(){
-        /* Explicit Rotates */
-        describe('#rotate', function(){
-            it('should return an object of arrays', function(){
-                assert.equal(JSON.stringify(rowcol.array.rotate(rowData)), colString, "row->col rotation - explicit");
-            });
+    /* Explicit Object Rotates */
+    describe('#rotate', () => {
+      it('should return an array of objects', () => {
+        assert.equal(JSON.stringify(rowcol.object.rotate(colData)), rowString, 'col->row rotation - explicit');
+      });
 
-            it('should rotate into an existing object', function(){
-                var existingObj = { extra: true };
-                var resultObj = rowcol.array.rotate(rowData, existingObj);
-                assert.equal(resultObj.extra, true);
-            });
+      /* Rotate into Tests */
+      const baseResult = [{
+        id: 5,
+        name: 'E',
+        approved: false,
+      }];
+      let final = rowcol.object.rotate(colData, baseResult);
 
-            it('should perform a limited rotate', function(){
-                var limitedObj = rowcol.array.rotate(rowData, {name: [], approved: []}, true);
-                var limitedObj2 = rowcol.array.rotate(rowData, {},['name','approved']);
+      it('should modify the passed result', () => {
+        assert.equal(baseResult, final);
+      });
 
-                assert.equal(limitedObj.id, undefined);
-                assert.equal(limitedObj2.id, undefined);
-                assert.equal(limitedObj.toString(), limitedObj2.toString());
-            });
+      it('should not overwrite existing results', () => {
+        assert.equal(final.length, 4);
+        assert.equal(final[0].name, 'E');
+        assert.equal(final[3].name, 'C');
+      });
 
-            it('should not overwrite existing properties of a passed value', function(){
 
-                // TODO: A passed array will be overwritten. Not sure of the direction to take.
-                var existingObj = { name: true };
-                var resultObject = rowcol.array.rotate(rowData, {name: true, approved: []}, true);
-                assert.equal(resultObject.name, true);
-                assert.equal(typeof resultObject.name, 'boolean');
-            });
-
-            it('should throw an exception if it does not receive an array', function(){
-
-                assert.throws(function() {
-                    rowcol.array.rotate(colData, {name: true, approved: []}, true);
-                });
-            });
-
-            it('should throw if no result object with limited', function(){
-
-                assert.throws(function() {
-                    rowcol.array.rotate(rowData, undefined, true);
-                });
-            });
+      it('should accept only array and undefined as results', () => {
+        assert.doesNotThrow(() => {
+          final = rowcol.object.rotate(colData, [1, 2, 3]);
         });
+
+        assert.equal(final.length, 6);
+
+        assert.doesNotThrow(() => {
+          final = rowcol.object.rotate(colData, undefined);
+        });
+      });
+
+      it('should throw if not an object', () => {
+        assert.throws(() => {
+          rowcol.object.rotate('string');
+        });
+      });
+
+      it('should throw if not an result is the wrong type', () => {
+        assert.throws(() => {
+          final = rowcol.object.rotate(colData, 'string');
+        });
+      });
+
+      it('should ignore undefined values when clearUndef is true', () => {
+        final = rowcol.object.rotate(colDataWithUndefined, undefined, true);
+
+        assert.equal('name' in final[1], false);
+      });
     });
 
-    /* Generic rotates (should work as above) */
-    describe('#rotate', function(){
-        it('should rotate like the explicit object.rotate and array.rotate', function(){
-            assert.equal(JSON.stringify(rowcol.rotate(rowData)), colString, "row->col rotation - generic");
-            assert.equal(JSON.stringify(rowcol.rotate(colData)), rowString, "col->row rotation - generic");
-        });
+    /* Filters */
+    describe('#filter', () => {
+      const aResult = '{"id":[1],"name":["A"],"approved":[true]}';
 
-        it('should throw with a bad data type', function(){
+      it('should accept a string value', () => {
+        const filtTest = rowcol.object.filter(colData, 'name', 'A');
+        assert.equal(JSON.stringify(filtTest), aResult);
+      });
 
-            assert.throws(function() {
-                rowcol.rotate("string");
-            });
-        });
+      it('should accept a Boolean value', () => {
+        const filtTest = rowcol.object.filter(colData, 'approved', true);
+        assert.equal(filtTest.name.length, 2);
+      });
+
+      it('should accept a filter function', () => {
+        const filtTest = rowcol.object.filter(colData, 'name', val => val === 'A');
+        assert.equal(JSON.stringify(filtTest), aResult);
+      });
+
+      it('should return an empty object no matches', () => {
+        const filtTest = rowcol.object.filter(colData, 'name', 'Q');
+        assert.equal(JSON.stringify(filtTest), '{}');
+      });
     });
 
-    describe('#proxy',function(){
-        /* Proxy Test */
-        var prox = rowcol.proxy(colData, 1);
+    describe('#filterIndexes', () => {
+      it('should filter Boolean values', () => {
+        const filtTest = rowcol.object.filterIndexes(colData, 'approved', true);
+        assert(filtTest.length === 2 && filtTest[0] === 0 && filtTest[1] === 1);
+      });
 
-        it('should not commit when the value is set',function(){
-            prox.approved = false;
-            assert.equal(colData.approved[1], true, "proxy: commit prior value");
-        });
+      it('should filter string values', () => {
+        const filtTest = rowcol.object.filterIndexes(colData, 'name', 'B');
+        assert(filtTest.length === 1 && filtTest[0] === 1);
+      });
 
-        it('should update the value when commit is called',function(){
-            prox.commit();
-            assert.equal(colData.approved[1], false, "proxy: commit value mismatch");
-        });
+      it('should filter using a function', () => {
+        const filtTest = rowcol.object.filterIndexes(colData, 'id', val => val > 1);
+        assert(filtTest.length === 2 && filtTest[0] === 1 && filtTest[1] === 2);
+      });
 
-        it('should not commit when the value is set',function(){
-            prox.name = "D";
-            assert.equal(colData.name[1], "B", "proxy: finalize prior value");
-        });
-
-        it('should update the value when finalize is called',function(){
-            prox.finalize();
-            assert.equal(colData.name[1], "D", "proxy: finalize value mismatch");
-        });
-
-        it('should not permit changes after finalize',function(){
-            assert.throws(function(){ prox.commit(); }, ReferenceError);
-        });
-
-        it('should support clearUndef', function(){
-            prox = rowcol.proxy(colDataWithUndefined, 1, true);
-            
-            assert.equal("name" in prox, false);
-
-            // Add the name to the proxy
-            prox.name = 'B';
-            prox.commit();
-
-            assert.equal(colDataWithUndefined.name[1], 'B');
-
-            // clearUndef will not move undefineds back into the object
-            prox.name = undefined;
-            prox.finalize();
-
-            assert.equal(colDataWithUndefined.name[1], 'B');
-        });
-
+      it('should return an empty array for no matches', () => {
+        const filtTest = rowcol.object.filterIndexes(colData, 'name', 'Q');
+        assert.equal(filtTest.length, 0);
+      });
     });
 
-    describe('#rotate', function(){
+    describe('#filterMerge', () => {
+      it('should return an empty object when passed no indexes', () => {
+        const mergeResult = rowcol.object.filterMerge(colData);
+        assert.equal(Object.keys(mergeResult).length, 0);
+      });
 
+      it('should return an empty object when passed empty indexes', () => {
+        const mergeResult = rowcol.object.filterMerge(colData, []);
+        assert.equal(Object.keys(mergeResult).length, 0);
+      });
+
+      it('should return an object when passed an index of [0]', () => {
+        const mergeResult = rowcol.object.filterMerge(colData, [0]);
+        assert.equal(Object.keys(mergeResult).length, 3);
+      });
     });
 
-    describe('test coverage', function(){
+    /* ObjFromIndex */
+    describe('#objFromIndex', () => {
+      const idxTest = rowcol.object.objFromIndex(colData, 1);
 
-        describe('#isArray', function(){
+      it('should extract the values for the appropriate index', () => {
+        assert.equal(idxTest.name, colData.name[1]);
+      });
 
-            it('should recognize a valid array', function() {
-                assert.equal(rowcol.test.isArray([]), true);
-                assert.equal(rowcol.test.isArray([1, 2, 3]), true);
-                assert.equal(rowcol.test.isArray(JSON.parse('["a","b","c"]')), true);
-                assert.equal(rowcol.test.isArray(JSON.parse('["a","b","c"]')), true);
-            });
+      it('should not modify the original (arrays/object values excepted)', () => {
+        idxTest.name = 'M';
+        assert.equal(colData.name[1], 'B', 'objFromIndex: value linked to original');
+      });
 
-            it('should reject non-array types', function() {
-                assert.equal(rowcol.test.isArray(true), false);
-                assert.equal(rowcol.test.isArray(false), false);
-                assert.equal(rowcol.test.isArray(''), false);
-                assert.equal(rowcol.test.isArray(0), false);
-                assert.equal(rowcol.test.isArray({0: true, 1: false, length: 2}), false);
-            });
+      it('should not be a Proxy', () => {
+        assert(has(idxTest, 'commit') === false, 'objFromIndex: provides proxy interface');
+      });
 
+      /* Object merge tests */
+      const mergeObj = { test: true };
+      let resultObj;
+
+      it('should accept an existing object', () => {
+        assert.doesNotThrow(() => {
+          resultObj = rowcol.object.objFromIndex(colData, 1, undefined, mergeObj);
         });
+      });
+
+      resultObj = rowcol.object.objFromIndex(colData, 1, undefined, mergeObj);
+      it('should modify the passed result object', () => {
+        assert.equal(mergeObj, resultObj);
+        assert.equal(resultObj.name, 'B');
+      });
+
+      const undefTest = rowcol.object.objFromIndex(colDataWithUndefined, 1, true);
+
+      it('should ignore undefined values with clearUndef', () => {
+        assert.equal('name' in undefTest, false);
+      });
     });
 
+    /* readEach Tests */
+    describe('#readEach', () => {
+      let eachLen = 0;
+
+      rowcol.object.readEach(colData, (obj) => {
+        eachLen += 1;
+        // eslint-disable-next-line
+        obj.id = 4; // Intentional "bad" edit
+      });
+
+      it('should loop through each index', () => {
+        assert(eachLen === 3, 'readEach: not looping through entire object');
+      });
+
+      it('should not allow simple values to be edited', () => {
+        assert(colData.id[0] === 1, 'readEach: able to edit original');
+      });
+    });
+
+    /* Each Tests */
+    describe('#each', () => {
+      const newData = {
+        id: [1, 2, 3],
+        name: ['A', 'B', 'C'],
+        approved: [true, true, false],
+      };
+      let eachLen = 0;
+
+      rowcol.object.each(newData, (obj) => {
+        eachLen += 1;
+        // eslint-disable-next-line
+        obj.id = 4; // Intentional "bad" edit
+      });
+
+      it('should loop through each index', () => {
+        assert(eachLen === 3, 'readEach: not looping through entire object');
+      });
+
+      it('should commit changes to the original object', () => {
+        assert(newData.id.toString() === '4,4,4', 'each: changes were not permanent');
+      });
+    });
+  });
+
+  describe('array', () => {
+    /* Explicit Rotates */
+    describe('#rotate', () => {
+      it('should return an object of arrays', () => {
+        assert.equal(JSON.stringify(rowcol.array.rotate(rowData)), colString, 'row->col rotation - explicit');
+      });
+
+      it('should rotate into an existing object', () => {
+        const existingObj = { extra: true };
+        const resultObj = rowcol.array.rotate(rowData, existingObj);
+        assert.equal(resultObj.extra, true);
+      });
+
+      it('should perform a limited rotate', () => {
+        const limitedObj = rowcol.array.rotate(rowData, { name: [], approved: [] }, true);
+        const limitedObj2 = rowcol.array.rotate(rowData, {}, ['name', 'approved']);
+
+        assert.equal(limitedObj.id, undefined);
+        assert.equal(limitedObj2.id, undefined);
+        assert.equal(limitedObj.toString(), limitedObj2.toString());
+      });
+
+      it('should not overwrite existing properties of a passed value', () => {
+        // TODO: A passed array will be overwritten. Not sure of the direction to take.
+        const resultObject = rowcol.array.rotate(rowData, { name: true, approved: [] }, true);
+        assert.equal(resultObject.name, true);
+        assert.equal(typeof resultObject.name, 'boolean');
+      });
+
+      it('should throw an exception if it does not receive an array', () => {
+        assert.throws(() => {
+          rowcol.array.rotate(colData, { name: true, approved: [] }, true);
+        });
+      });
+
+      it('should throw if no result object with limited', () => {
+        assert.throws(() => {
+          rowcol.array.rotate(rowData, undefined, true);
+        });
+      });
+    });
+  });
+
+  /* Generic rotates (should work as above) */
+  describe('#rotate', () => {
+    it('should rotate like the explicit object.rotate and array.rotate', () => {
+      assert.equal(JSON.stringify(rowcol.rotate(rowData)), colString, 'row->col rotation - generic');
+      assert.equal(JSON.stringify(rowcol.rotate(colData)), rowString, 'col->row rotation - generic');
+    });
+
+    it('should throw with a bad data type', () => {
+      assert.throws(() => {
+        rowcol.rotate('string');
+      });
+    });
+  });
+
+  describe('#proxy', () => {
+    /* Proxy Test */
+    let prox = rowcol.proxy(colData, 1);
+
+    it('should not commit when the value is set', () => {
+      prox.approved = false;
+      assert.equal(colData.approved[1], true, 'proxy: commit prior value');
+    });
+
+    it('should update the value when commit is called', () => {
+      prox.commit();
+      assert.equal(colData.approved[1], false, 'proxy: commit value mismatch');
+    });
+
+    it('should not commit when the value is set', () => {
+      prox.name = 'D';
+      assert.equal(colData.name[1], 'B', 'proxy: finalize prior value');
+    });
+
+    it('should update the value when finalize is called', () => {
+      prox.finalize();
+      assert.equal(colData.name[1], 'D', 'proxy: finalize value mismatch');
+    });
+
+    it('should not permit changes after finalize', () => {
+      assert.throws(() => {
+        prox.commit();
+      }, ReferenceError);
+    });
+
+    it('should support clearUndef', () => {
+      prox = rowcol.proxy(colDataWithUndefined, 1, true);
+
+      assert.equal('name' in prox, false);
+
+      // Add the name to the proxy
+      prox.name = 'B';
+      prox.commit();
+
+      assert.equal(colDataWithUndefined.name[1], 'B');
+
+      // clearUndef will not move undefineds back into the object
+      prox.name = undefined;
+      prox.finalize();
+
+      assert.equal(colDataWithUndefined.name[1], 'B');
+    });
+  });
+
+  describe('#rotate', () => {
+
+  });
+
+  describe('test coverage', () => {
+    describe('#isArray', () => {
+      it('should recognize a valid array', () => {
+        assert.equal(rowcol.test.isArray([]), true);
+        assert.equal(rowcol.test.isArray([1, 2, 3]), true);
+        assert.equal(rowcol.test.isArray(JSON.parse('["a","b","c"]')), true);
+        assert.equal(rowcol.test.isArray(JSON.parse('["a","b","c"]')), true);
+      });
+
+      it('should reject non-array types', () => {
+        assert.equal(rowcol.test.isArray(true), false);
+        assert.equal(rowcol.test.isArray(false), false);
+        assert.equal(rowcol.test.isArray(''), false);
+        assert.equal(rowcol.test.isArray(0), false);
+        assert.equal(rowcol.test.isArray({ 0: true, 1: false, length: 2 }), false);
+      });
+    });
+  });
 });
