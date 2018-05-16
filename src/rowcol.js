@@ -324,8 +324,7 @@ function readEach(obj, fn) {
  * @example
  * var proxyRow = new RowcolProxy(colData, index);
  */
-const RCProxy = (function () {
-  // TODO - swap out for ES6 proxy object
+const RCProxy = (function proxyMaker() {
   const proxyObj = [];
   const proxyIdx = [];
   const proxyClearFlag = [];
@@ -367,9 +366,6 @@ const RCProxy = (function () {
    * @constructor
    */
   function RowcolProxy(obj, index, clearUndef) {
-    // Increment the guid
-    guid += 1;
-
     // Set the private data.
     proxyObj[guid] = obj;
     proxyIdx[guid] = index;
@@ -378,6 +374,9 @@ const RCProxy = (function () {
 
     // Call reusable code for objFromIndex
     objFromIndex(obj, index, clearUndef, this);
+
+    // Increment the guid
+    guid += 1;
   }
 
   // Defined inside the constructor to give it access to the originating object and parameters
