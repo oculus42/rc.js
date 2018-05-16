@@ -1,4 +1,4 @@
-module.exports = function (grunt) {
+module.exports = (grunt) => {
 //   const banner = `/*
 // <%= pkg.name %> <%= pkg.version %>- <%= pkg.description %>
 // <%= pkg.repository.url %>
