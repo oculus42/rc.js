@@ -1,1 +1,1 @@
-module.exports = require('./rowcol.js');
+module.exports = require('./src/rowcol.js');
