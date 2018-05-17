@@ -40,19 +40,19 @@ Problems with Columns
 
 RowCol Solutions
 ----
-###Filter
+### Filter
 The simple column-based filter supports strict comparison intended for primitive types or a filter function. For all filter actions, the original object is not modified, but complex data types are referenced. Filters are broken into three functions:
 *  `rowcol.object.filter(obj, field, filter)` - Basic filter action returns a result set based on a field name and a filter.
 *  `rowcol.object.filterIndexes(obj, field, filter)` - Takes the same arguments as `rowcol.object.filter` but returns the indexes of the filter action. This is useful for more complex set manipulation.
 *  `rowcol.object.filterMerge(obj, indexes)` - Allows a filter action with an external source of indexes.
 
-###Proxy
+### Proxy
 Extracting a row for viewing and interaction is convenient, but changes to primitive types on the "view" object will not be reflected on the original column-based store. **Proxy** objects add `.commit()` and `.finalize()` to update the source columns and keep your data consistent. Proxy stores copies and/or references of the information passed when a proxy is created, so you must use the `.destroy()` or `.finalize()` method to avoid memory leaks.
 
-###Rotate
+### Rotate
 RowCol provides `rowcol.rotate` to convert arrays of objects (rows) and objects of arrays (columns) back and forth. This allows the compact transmission of columns while existing row-based code. Performance testing is recommended if you are rotating large datasets.
 
-###RC Chaining
+### RC Chaining
 An object can be made into an `RC` object to support chaining of the following methods:
 *  `filter` - Calls `rowcol.object.filter` and provides the result in an RC object for continued chaining.
 *  `proxy` - Calls `rowcol.object.proxy` and returns a Proxy object. Ends the chain.
