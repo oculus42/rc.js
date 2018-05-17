@@ -97,11 +97,13 @@ function arrayRotateUnlimited(arr, result) {
 /**
  * Performs the rotation for a limited (partial) rotation
  * @param {Array} arr
- * @param {Object} result
+ * @param {Object} data
  * @param {Array|boolean} limited
  * @returns {Object}
  */
-function arrayRotateLimited(arr, result, limited) {
+function arrayRotateLimited(arr, data, limited) {
+  // We are intentionally modifying the input, so we reassign it.
+  const result = data;
   // If this is limited to the list of keys, get the keys for limited rotate
   // One pass to eliminate any unusable keys and create missing arrays
   const objKeys = (Array.isArray(limited) ? limited : Object.keys(result)).filter((key) => {
@@ -287,8 +289,6 @@ function readEach(obj, fn) {
     fn(objFromIndex(obj, i));
   }
 }
-
-
 
 /**
  * Create a proxy
